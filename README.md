@@ -31,6 +31,8 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 ```$ docker run -v <folder where you want to save images>:/output/ <image_name> <args> --output-folder /output/ ```
 
 ## Examples
+![example_1](examples/example_1.png)
+![example_2](examples/example_2.png)
 
 ## Contributing
 For now, it is just a personal repository :) feel free to fork it anyway.
