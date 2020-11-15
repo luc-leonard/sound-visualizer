@@ -1,7 +1,7 @@
 import time
 
 
-class StopWatch():
+class StopWatch:
     def __enter__(self):
         self.begin = time.perf_counter()
 

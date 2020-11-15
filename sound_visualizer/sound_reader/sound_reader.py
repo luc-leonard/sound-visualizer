@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -8,12 +8,16 @@ from .fft import get_spectogram_data
 
 
 class SoundReader(BaseModel):
-    frame_size: int = Field(default=2 ** 10, description='Should be a power of 2')
+    frame_size: int = Field(default=2 ** 10, description="Should be a power of 2")
     overlap_factor: float = Field(ge=0.0, le=1.0)
 
-    def get_spectrogram_data(self, filename: str, start: int, length: int) -> Tuple[int, np.ndarray]:
+    def get_spectrogram_data(
+        self, filename: str, start: int, length: int
+    ) -> Tuple[int, np.ndarray]:
         data, length = get_sound_data(filename, start, length)
-        return length, get_spectogram_data(data, frame_size=self.frame_size, overlap_factor=self.overlap_factor)
+        return length, get_spectogram_data(
+            data, frame_size=self.frame_size, overlap_factor=self.overlap_factor
+        )
 
 
 def get_sound_data(filename: str, start_second: int, length_second: int) -> Tuple[np.ndarray, int]:
