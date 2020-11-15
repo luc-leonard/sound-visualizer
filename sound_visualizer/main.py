@@ -69,6 +69,7 @@ def arg_parse():
         help="the start in the wav, in second",
         default=0,
     )
+    parser.add_argument("--length", type=int, help="the end in the wav in second", default=-1)
     parser.add_argument(
         "--high-cut",
         type=int,
@@ -81,7 +82,7 @@ def arg_parse():
         help="the cut-off frequency. nothing above will be displayed",
         default='.',
     )
-    parser.add_argument("--end", type=int, help="the end in the wav in second", default=-1)
+
     return parser.parse_args()
 
 
@@ -94,7 +95,7 @@ def main():
     stopwatch = StopWatch()
     with stopwatch:
         spectral_analysis = spectral_analyzer.get_spectrogram_data(
-            args.filename, args.start, args.end
+            args.filename, args.start, args.length
         )
     LOGGER.info(f"fft transformation took {stopwatch.interval}")
     LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
