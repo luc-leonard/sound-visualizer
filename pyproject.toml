@@ -11,6 +11,8 @@ scipy = "^1.5"
 black = "^20.8b1"
 flake8="^3.8"
 isort="^5.6"
+matplotlib="^3.3"
+pydantic="^1.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

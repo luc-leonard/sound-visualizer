@@ -2,6 +2,7 @@ import argparse
 import logging
 import math
 import sys
+import uuid
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,7 +23,7 @@ def convert_size(size_bytes):
     return "%s %s" % (s, size_name[i])
 
 
-def display_3dplot(spectral_analysis: SpectralAnalysis):
+def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
     (x, y) = np.meshgrid(
         spectral_analysis.frequency_domain,
         spectral_analysis.time_domain,
@@ -39,7 +40,7 @@ def display_3dplot(spectral_analysis: SpectralAnalysis):
     ax.set_zlabel("Amplitude")
 
     fig.colorbar(the_plot, shrink=0.5, aspect=5)
-    plt.show()
+    plt.savefig(f'{output_folder}/{uuid.uuid4()}')
 
 
 def generate_heightmap(fft_data: np.ndarray):
@@ -74,6 +75,12 @@ def arg_parse():
         help="the cut-off frequency. nothing above will be displayed",
         default=-1,
     )
+    parser.add_argument(
+        "--output-folder",
+        type=str,
+        help="the cut-off frequency. nothing above will be displayed",
+        default='.',
+    )
     parser.add_argument("--end", type=int, help="the end in the wav in second", default=-1)
     return parser.parse_args()
 
@@ -94,7 +101,7 @@ def main():
     LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
     if args.high_cut > 0:
         spectral_analysis = spectral_analysis.high_cut(args.high_cut)
-    display_3dplot(spectral_analysis)
+    save_3dplot(spectral_analysis, args.output_folder)
 
 
 # generate_heightmap(filtered_fft)
