@@ -7,7 +7,7 @@ from scipy.io import wavfile
 from .fft import get_spectogram_data
 
 
-class SoundReader(BaseModel):
+class SpectralAnalyzer(BaseModel):
     frame_size: int = Field(default=2 ** 10, description="Should be a power of 2")
     overlap_factor: float = Field(ge=0.0, le=1.0)
 
@@ -21,11 +21,6 @@ class SoundReader(BaseModel):
 
 
 def get_sound_data(filename: str, start_second: int, length_second: int) -> Tuple[np.ndarray, int]:
-    if start_second is None:
-        start_second = 0
-    if length_second is None:
-        length_second = -1
-
     sample_rate, data = wavfile.read(filename)
     # we only handle one channel
 
@@ -36,6 +31,6 @@ def get_sound_data(filename: str, start_second: int, length_second: int) -> Tupl
         end_idx = data.shape[0] - 1
     else:
         end_idx = start_idx + (length_second * sample_rate)
-    data = data[start_second:end_idx]
+    data = data[start_idx:end_idx]
     length = data.shape[0] / sample_rate
     return data, length

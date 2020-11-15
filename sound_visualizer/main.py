@@ -5,7 +5,7 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sound_reader.sound_reader import SoundReader
+from sound_reader.sound_reader import SpectralAnalyzer
 from utils.stopwatch import StopWatch
 
 LOGGER = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def arg_parse():
 def main():
     args = arg_parse()
     LOGGER.info(args)
-    sound_reader = SoundReader(overlap_factor=args.overlap_factor, frame_size=args.frame_size)
+    sound_reader = SpectralAnalyzer(overlap_factor=args.overlap_factor, frame_size=args.frame_size)
     stopwatch = StopWatch()
     with stopwatch:
         length, fft_data = sound_reader.get_spectrogram_data(args.filename, args.start, args.end)

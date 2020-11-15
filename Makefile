@@ -7,8 +7,8 @@
 #################
 # General goals #
 #################
-isort = isort sound_visualizer
-black = black sound_visualizer
+isort = isort sound_visualizer tests
+black = black sound_visualizer tests
 
 
 format:
@@ -16,7 +16,7 @@ format:
 	$(black)
 
 lint:
-	flake8 sound_visualizer
+	flake8 sound_visualizer tests
 	$(isort) --check-only --df
 	$(black) --check --diff
 	mypy .
