@@ -1,21 +1,19 @@
+import logging
+import math
 import sys
 
-import numpy as np
-from scipy.io import wavfile
-from numpy.lib import stride_tricks
-import math
-import logging
 import matplotlib.pyplot as plt
-from PIL import Image
-import scipy.misc as mi
+import numpy as np
 
-from sound_visualizer.fft import get_spectogram_data
+from sound_visualizer.sound_reader.sound_reader import SoundReader
+from sound_visualizer.utils.stopwatch import StopWatch
+
+import argparse
 
 LOGGER = logging.getLogger(__name__)
 
 
 def convert_size(size_bytes):
-
     if size_bytes == 0:
         return "0B"
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -26,7 +24,7 @@ def convert_size(size_bytes):
 
 
 def display_3dplot(fft_data, length):
-    frequency_cut_top = 1000
+    frequency_cut_top = 100
     filtered_fft = fft_data[:, 0:int(frequency_cut_top / 10)]
 
     (x, y) = np.meshgrid(np.linspace(0, frequency_cut_top, filtered_fft.shape[1]),
@@ -34,7 +32,7 @@ def display_3dplot(fft_data, length):
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
-    ax.view_init(elev=20, azim=75)
+    ax.view_init(elev=20, azim=-45)
 
     the_plot = ax.plot_surface(x, y, filtered_fft, cmap='autumn', shade=True)
     ax.set_title('Surface Plot in Matplotlib')
@@ -46,18 +44,25 @@ def display_3dplot(fft_data, length):
     plt.show()
 
 
+def generate_heightmap(fft_data: np.ndarray):
+    image_data = np.floor((fft_data / (fft_data.max() / 255))).astype(int)
+    plt.contour(image_data)
+    plt.show()
+
+
 def main():
 
-    sample_rate, data = wavfile.read('../sounds/Noisia & The Upbeats - Dustup-JnhjWUepaE8.wav')
-    length = data.shape[0] / sample_rate
-    if len(data.shape) > 1:
-        data = data[:, 0]
-    fft_data = get_spectogram_data(data, 2**10, 0.90)
+    sound_reader = SoundReader(overlap_factor=0.99, frame_size=2**10)
+    stopwatch = StopWatch()
+    with stopwatch:
+        length, fft_data = sound_reader.get_spectrogram_data('../sounds/Bass-Drum-1.wav')
+    LOGGER.info(f'fft transformation took {stopwatch.interval}')
     LOGGER.info(f'fft data size = {convert_size(fft_data.nbytes)}')
     display_3dplot(fft_data, length)
+    generate_heightmap(fft_data)
 
 
-if __name__ == '__main__':
+def init_logger():
     root = logging.getLogger()
     root.setLevel(level=logging.INFO)
     handler = logging.StreamHandler(sys.stdout)
@@ -66,7 +71,7 @@ if __name__ == '__main__':
     handler.setFormatter(formatter)
     root.addHandler(handler)
 
-    import timeit
 
-    print(timeit.timeit('main()', globals=globals(), number=1))
+if __name__ == '__main__':
+    init_logger()
     main()
