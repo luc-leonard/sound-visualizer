@@ -68,6 +68,12 @@ def arg_parse():
         help="the start in the wav, in second",
         default=0,
     )
+    parser.add_argument(
+        "--high-cut",
+        type=int,
+        help="the cut-off frequency. nothing above will be displayed",
+        default=-1,
+    )
     parser.add_argument("--end", type=int, help="the end in the wav in second", default=-1)
     return parser.parse_args()
 
@@ -86,7 +92,9 @@ def main():
     LOGGER.info(f"fft transformation took {stopwatch.interval}")
     LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
     LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
-    display_3dplot(spectral_analysis.high_cut(4900))
+    if args.high_cut > 0:
+        spectral_analysis = spectral_analysis.high_cut(args.high_cut)
+    display_3dplot(spectral_analysis)
 
 
 # generate_heightmap(filtered_fft)
