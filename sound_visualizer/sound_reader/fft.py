@@ -14,7 +14,8 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
     samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
     cols = np.ceil((len(samples) - frame_size) / float(hopSize)) + 1
     samples = np.append(samples, np.zeros(frame_size))
-    # first, we create overlapping windows (in the sql sense) with as_strided. then we copy them so each window will be modifiable
+    # first, we create overlapping windows (in the sql sense) with as_strided.
+    # then we copy them so each window will be modifiable
     frames = stride_tricks.as_strided(
         samples,
         shape=(int(cols), frame_size),

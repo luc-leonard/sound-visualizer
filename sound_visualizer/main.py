@@ -5,7 +5,8 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sound_reader.sound_reader import SpectralAnalyzer
+from PIL import Image
+from sound_reader.sound_reader import SpectralAnalysis, SpectralAnalyzer
 from utils.stopwatch import StopWatch
 
 LOGGER = logging.getLogger(__name__)
@@ -21,20 +22,17 @@ def convert_size(size_bytes):
     return "%s %s" % (s, size_name[i])
 
 
-def display_3dplot(fft_data, length):
-    frequency_cut_top = 100
-    filtered_fft = fft_data[:, 0 : int(frequency_cut_top / 10)]
-
+def display_3dplot(spectral_analysis: SpectralAnalysis):
     (x, y) = np.meshgrid(
-        np.linspace(0, frequency_cut_top, filtered_fft.shape[1]),
-        np.linspace(0, length, filtered_fft.shape[0]),
+        spectral_analysis.frequency_domain,
+        spectral_analysis.time_domain,
     )
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection="3d")
     ax.view_init(elev=20, azim=-45)
 
-    the_plot = ax.plot_surface(x, y, filtered_fft, cmap="autumn", shade=True)
+    the_plot = ax.plot_surface(x, y, spectral_analysis.fft_data, cmap="autumn", shade=True)
     ax.set_title("Surface Plot in Matplotlib")
     ax.set_xlabel("Frequency (hz)")
     ax.set_ylabel("Time (s)")
@@ -45,9 +43,10 @@ def display_3dplot(fft_data, length):
 
 
 def generate_heightmap(fft_data: np.ndarray):
-    image_data = np.floor((fft_data / (fft_data.max() / 255))).astype(int)
+    image_data = np.floor((fft_data / (fft_data.max() / 255))).astype('uint8')
     plt.contour(image_data)
     plt.show()
+    Image.fromarray(image_data).show()
 
 
 def arg_parse():
@@ -76,14 +75,21 @@ def arg_parse():
 def main():
     args = arg_parse()
     LOGGER.info(args)
-    sound_reader = SpectralAnalyzer(overlap_factor=args.overlap_factor, frame_size=args.frame_size)
+    spectral_analyzer = SpectralAnalyzer(
+        overlap_factor=args.overlap_factor, frame_size=args.frame_size
+    )
     stopwatch = StopWatch()
     with stopwatch:
-        length, fft_data = sound_reader.get_spectrogram_data(args.filename, args.start, args.end)
+        spectral_analysis = spectral_analyzer.get_spectrogram_data(
+            args.filename, args.start, args.end
+        )
     LOGGER.info(f"fft transformation took {stopwatch.interval}")
-    LOGGER.info(f"fft data size = {convert_size(fft_data.nbytes)}")
-    display_3dplot(fft_data, length)
-    generate_heightmap(fft_data)
+    LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
+    LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
+    display_3dplot(spectral_analysis.high_cut(4900))
+
+
+# generate_heightmap(filtered_fft)
 
 
 def init_logger():
@@ -97,9 +103,5 @@ def init_logger():
 
 
 if __name__ == "__main__":
-    import os
-
-    print(os.getcwd())
-    print(os.listdir())
     init_logger()
     main()

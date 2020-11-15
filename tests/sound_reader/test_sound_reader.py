@@ -11,6 +11,11 @@ def sample_rate() -> int:
 
 
 @pytest.fixture()
+def frequency() -> int:
+    return 1500
+
+
+@pytest.fixture()
 def fake_sound(sample_rate):
     return generate_sound(frequency=200, duration_second=10, sample_rate=sample_rate)
 
