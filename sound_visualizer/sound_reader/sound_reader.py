@@ -36,7 +36,7 @@ class SpectralAnalyzer(BaseModel):
             data, frame_size=self.frame_size, overlap_factor=self.overlap_factor
         )
         return SpectralAnalysis(
-            time_domain=np.linspace(0, length, fft_data.shape[0]),
+            time_domain=np.linspace(0, data.shape[0] / sanple_rate, fft_data.shape[0]),
             frequency_domain=np.linspace(0, sanple_rate / 2.0, fft_data.shape[1]),
             fft_data=fft_data,
         )
