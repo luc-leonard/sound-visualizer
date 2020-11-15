@@ -1,0 +1,4 @@
+sounds/*
+.ipynb_checkpoints
+.mypy_cache
+.idea

@@ -5,8 +5,9 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from sound_visualizer.sound_reader.sound_reader import SoundReader
-from sound_visualizer.utils.stopwatch import StopWatch
+from sound_reader.sound_reader import SoundReader
+from utils.stopwatch import StopWatch
+
 
 import argparse
 
@@ -50,12 +51,27 @@ def generate_heightmap(fft_data: np.ndarray):
     plt.show()
 
 
-def main():
+def arg_parse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--filename", type=str,
+                        help="the path to the wav file to analyse")
+    parser.add_argument("--frame_size", type=int,
+                        help="the size of each frame when computing the whole spectrogram. Should be a power of 2")
+    parser.add_argument("--overlap_factor", type=float,
+                        help="the overlap of the frames used to compute the spectogram")
+    parser.add_argument("--start", type=int,
+                        help="the start in the wav, in second", default=0)
+    parser.add_argument("--end", type=int,
+                        help="the end in the wav in second", default=-1)
+    return parser.parse_args()
 
-    sound_reader = SoundReader(overlap_factor=0.99, frame_size=2**10)
+def main():
+    args = arg_parse()
+    LOGGER.info(args)
+    sound_reader = SoundReader(overlap_factor=args.overlap_factor, frame_size=args.frame_size)
     stopwatch = StopWatch()
     with stopwatch:
-        length, fft_data = sound_reader.get_spectrogram_data('../sounds/Bass-Drum-1.wav')
+        length, fft_data = sound_reader.get_spectrogram_data(args.filename, args.start, args.end)
     LOGGER.info(f'fft transformation took {stopwatch.interval}')
     LOGGER.info(f'fft data size = {convert_size(fft_data.nbytes)}')
     display_3dplot(fft_data, length)
@@ -73,5 +89,8 @@ def init_logger():
 
 
 if __name__ == '__main__':
+    import os
+    print(os.getcwd())
+    print(os.listdir())
     init_logger()
     main()
