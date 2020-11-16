@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from pytest_mock import MockerFixture
-from sound_reader.sound_reader import SpectralAnalyzer
 
-from sound_visualizer.sound_reader.fft import get_spectogram_data
+from sound_visualizer.sound import SoundReader
+from sound_visualizer.sound.spectral_analyser import SpectralAnalyzer, get_spectogram_data
 from tests.sound_reader.util import generate_sound
 
 
@@ -26,6 +26,7 @@ def test_should_compute_fft(frequency: int):
     )
     frequency_space = np.linspace(0, 44100 / 2.0, fft_data.shape[1])
 
+    # We compare the pure sin frequency to the highest Fourier factor.
     assert abs(frequency - frequency_space[np.argmax(fft_data[0])]) <= 1
 
 
@@ -38,7 +39,7 @@ def test_spectral_analyser(mocker: MockerFixture, sample_rate, frequency):
         ),
     )
     analysis = SpectralAnalyzer(overlap_factor=0.90, frame_size=2 ** 15).get_spectrogram_data(
-        '', start=0, length=-1
+        SoundReader(filename='', start=0, length=-1)
     )
 
     assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 1
@@ -54,8 +55,10 @@ def test_spectral_analyser_high_cut(mocker: MockerFixture, sample_rate, frequenc
     )
     analysis = (
         SpectralAnalyzer(overlap_factor=0.90, frame_size=2 ** 15)
-        .get_spectrogram_data('', start=0, length=-1)
+        .get_spectrogram_data(SoundReader(filename='', start=0, length=-1))
         .high_cut(frequency + 50)
     )
 
     assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
+    # there should be NOTHING above frequency cut
+    assert analysis.frequency_domain[-1] < frequency + 50 + 1

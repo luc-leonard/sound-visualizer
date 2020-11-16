@@ -1,13 +1,13 @@
 import argparse
+import datetime
 import logging
 import math
 import sys
-import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-from sound_reader.sound_reader import SpectralAnalysis, SpectralAnalyzer
+from sound.spectral_analyser import SpectralAnalysis, SpectralAnalyzer
 from utils.stopwatch import StopWatch
 
 LOGGER = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection="3d")
-    ax.view_init(elev=20, azim=-45)
+    ax.view_init(elev=20, azim=45)
 
     the_plot = ax.plot_surface(x, y, spectral_analysis.fft_data, cmap="autumn", shade=True)
     ax.set_title("Surface Plot in Matplotlib")
