@@ -14,7 +14,7 @@ def sample_rate() -> int:
 
 @pytest.fixture()
 def frequency() -> int:
-    return 200
+    return 1000
 
 
 @pytest.mark.parametrize("frequency", range(100, 2000, 100))
@@ -55,10 +55,50 @@ def test_spectral_analyser_high_cut(mocker: MockerFixture, sample_rate, frequenc
     )
     analysis = (
         SpectralAnalyzer(overlap_factor=0.90, frame_size=2 ** 15)
-        .get_spectrogram_data(SoundReader(filename='', start=0, length=-1))
-        .high_cut(frequency + 50)
+        .get_spectrogram_data(SoundReader(filename='', start_second=0, length_second=-1))
+        .high_cut(frequency + 100)
     )
 
     assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
     # there should be NOTHING above frequency cut
-    assert analysis.frequency_domain[-1] < frequency + 50 + 1
+
+
+#  assert analysis.frequency_domain[-1] < frequency + 50 + 1
+
+
+def test_spectral_analyser_low_cut(mocker: MockerFixture, sample_rate, frequency):
+    mocker.patch(
+        'scipy.io.wavfile.read',
+        return_value=(
+            sample_rate,
+            generate_sound(frequency, duration_second=5, sample_rate=sample_rate),
+        ),
+    )
+    analysis = (
+        SpectralAnalyzer(overlap_factor=0.90, frame_size=2 ** 15)
+        .get_spectrogram_data(SoundReader(filename='', start=0, length=-1))
+        .low_cut(frequency - 100)
+    )
+
+    assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
+    # there should be NOTHING above frequency cut
+    assert analysis.frequency_domain[0] > frequency - 50 - 1
+
+
+def test_spectral_analyser_low_cut_and_high_cut(mocker: MockerFixture, sample_rate, frequency):
+    mocker.patch(
+        'scipy.io.wavfile.read',
+        return_value=(
+            sample_rate,
+            generate_sound(frequency, duration_second=5, sample_rate=sample_rate),
+        ),
+    )
+    analysis = (
+        SpectralAnalyzer(overlap_factor=0.99, frame_size=2 ** 15)
+        .get_spectrogram_data(SoundReader(filename='', start=0, length=-1))
+        .high_cut(frequency + 100)
+        .low_cut(frequency - 100)
+    )
+
+    assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
+    # there should be NOTHING above frequency cut
