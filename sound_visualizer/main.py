@@ -75,7 +75,13 @@ def arg_parse():
     parser.add_argument(
         "--high-cut",
         type=int,
-        help="the cut-off frequency. nothing above will be displayed",
+        help="the higher cut-off frequency. nothing above will be displayed",
+        default=-1,
+    )
+    parser.add_argument(
+        "--low-cut",
+        type=int,
+        help="the lower cut-off frequency. nothing below will be displayed",
         default=-1,
     )
     parser.add_argument(
@@ -102,12 +108,23 @@ def main():
     LOGGER.info(f"fft transformation took {stopwatch.interval}")
     LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
     LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
+    LOGGER.info(
+        f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
+    )
+    LOGGER.info("applying filters...")
+    if args.low_cut > 0:
+        spectral_analysis = spectral_analysis.low_cut(args.low_cut)
     if args.high_cut > 0:
         spectral_analysis = spectral_analysis.high_cut(args.high_cut)
+
+    LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
+    LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
+    LOGGER.info(
+        f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
+    )
     save_3dplot(spectral_analysis, args.output_folder)
 
-
-# generate_heightmap(filtered_fft)
+    # generate_heightmap(filtered_fft)
 
 
 def init_logger():
