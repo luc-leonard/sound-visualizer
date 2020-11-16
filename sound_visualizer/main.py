@@ -2,7 +2,7 @@ import argparse
 import logging
 import math
 import sys
-import uuid
+import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,7 +40,7 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
     ax.set_zlabel("Amplitude")
 
     fig.colorbar(the_plot, shrink=0.5, aspect=5)
-    plt.savefig(f'{output_folder}/{uuid.uuid4()}')
+    plt.savefig(f'{output_folder}/{datetime.datetime.now().isoformat()}.png')
 
 
 def generate_heightmap(fft_data: np.ndarray):
