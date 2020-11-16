@@ -61,9 +61,7 @@ def test_spectral_analyser_high_cut(mocker: MockerFixture, sample_rate, frequenc
 
     assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
     # there should be NOTHING above frequency cut
-
-
-#  assert analysis.frequency_domain[-1] < frequency + 50 + 1
+    assert analysis.frequency_domain[-1] < frequency + 100 + 1
 
 
 def test_spectral_analyser_low_cut(mocker: MockerFixture, sample_rate, frequency):
@@ -82,7 +80,7 @@ def test_spectral_analyser_low_cut(mocker: MockerFixture, sample_rate, frequency
 
     assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
     # there should be NOTHING above frequency cut
-    assert analysis.frequency_domain[0] > frequency - 50 - 1
+    assert analysis.frequency_domain[0] > frequency - 100 - 1
 
 
 def test_spectral_analyser_low_cut_and_high_cut(mocker: MockerFixture, sample_rate, frequency):
