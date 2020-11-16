@@ -12,10 +12,24 @@ class SpectralAnalysis(BaseModel):
     frequency_domain: np.ndarray
     fft_data: np.ndarray
 
-    def high_cut(self, cut_frequency: int):
+    def high_cut(self, cut_frequency: int) -> 'SpectralAnalysis':
         cut_idx = np.searchsorted(self.frequency_domain, cut_frequency)
         filtered_fft = self.fft_data[:, 0:cut_idx]
-        new_frequency_domain = np.linspace(0, cut_frequency, filtered_fft.shape[1])
+        new_frequency_domain = np.linspace(
+            self.frequency_domain[0], cut_frequency, filtered_fft.shape[1]
+        )
+        return SpectralAnalysis(
+            time_domain=self.time_domain,
+            frequency_domain=new_frequency_domain,
+            fft_data=filtered_fft,
+        )
+
+    def low_cut(self, cut_frequency: int) -> 'SpectralAnalysis':
+        cut_idx = np.searchsorted(self.frequency_domain, cut_frequency)
+        filtered_fft = self.fft_data[:, cut_idx : self.fft_data.shape[1] - 1]
+        new_frequency_domain = np.linspace(
+            cut_frequency, self.frequency_domain[-1], filtered_fft.shape[1]
+        )
         return SpectralAnalysis(
             time_domain=self.time_domain,
             frequency_domain=new_frequency_domain,
