@@ -7,8 +7,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-from sound.spectral_analyser import SpectralAnalysis, SpectralAnalyzer
-from utils.stopwatch import StopWatch
+from sound import SoundReader
+
+from sound_visualizer.sound.spectral_analyser import SpectralAnalysis, SpectralAnalyzer
+from sound_visualizer.utils import StopWatch
 
 LOGGER = logging.getLogger(__name__)
 
@@ -95,7 +97,7 @@ def main():
     stopwatch = StopWatch()
     with stopwatch:
         spectral_analysis = spectral_analyzer.get_spectrogram_data(
-            args.filename, args.start, args.length
+            SoundReader(filename=args.filename, start_second=args.start, length_second=args.length)
         )
     LOGGER.info(f"fft transformation took {stopwatch.interval}")
     LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
