@@ -23,6 +23,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      - name: Poetry Install
+        uses: knowsuchagency/poetry-install@v2
+        
       - name: format and lint
         run: make format lint
 
