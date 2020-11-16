@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Poetry Install
-        uses: knowsuchagency/poetry-install@v2
+        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
         
       - name: format and lint
         run: make format lint
