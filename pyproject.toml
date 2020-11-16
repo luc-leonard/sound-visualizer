@@ -10,6 +10,7 @@ numpy = "^1.19.4"
 scipy = "^1.5"
 matplotlib="^3.3"
 pydantic="^1.7"
+mypy = "^0.790"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
