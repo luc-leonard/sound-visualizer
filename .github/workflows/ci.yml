@@ -7,7 +7,7 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main, feat/setup-ci ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
