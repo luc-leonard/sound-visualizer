@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 from sound import SoundReader
 
-from sound_visualizer.sound import SpectralAnalyzer, SpectralAnalysis
+from sound_visualizer.sound import SpectralAnalysis, SpectralAnalyzer
 from sound_visualizer.utils import StopWatch
 
 LOGGER = logging.getLogger(__name__)
