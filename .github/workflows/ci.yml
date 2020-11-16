@@ -25,14 +25,14 @@ jobs:
       - name: Install Poetry
         uses: abatilo/actions-poetry@v2.0.0
 
-      - name: Install dependencies
-        run: poetry install
-        
       - name: Set up cache
         uses: actions/cache@v1
         with:
-         path: $HOME/cache/pypoetry/virtualenvs
-         key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+          path: $HOME/cache/pypoetry/virtualenvs
+          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
       
       - name: format and lint
         run: poetry run make format lint
