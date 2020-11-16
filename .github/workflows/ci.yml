@@ -28,7 +28,7 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v1
         with:
-          path: $HOME/.cache/pypoetry/virtualenvs/
+          path: /home/runner/.cache/pypoetry/virtualenvs/
           key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install dependencies
