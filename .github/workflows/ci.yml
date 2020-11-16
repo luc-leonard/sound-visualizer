@@ -7,7 +7,7 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, feat/setup-ci ]
   pull_request:
     branches: [ main ]
 
@@ -23,6 +23,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: GitHub Action for pytest
-        uses: cclauss/GitHub-Action-for-pytest@0.5.0
+      - name: format and lint
+        run: make format lint
+
+      - name: pytest
+        run: pytest
