@@ -20,7 +20,8 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 * --overlap_factor: how much the frames will overlap ? the more, the better, but the more memory it will use
 * --start: where to start in the wav, in seconds
 * --length: how much second of sound to analyse
-* --high-cut: this will ignore higher frequencies when displaying them
+* --low-cut:  this will ignore lower frequencies when displaying data
+* --high-cut: this will ignore higher frequencies when displaying data
 * --output-folder: where to output the images
 ### With poetry: 
 ```$ poetry run sound_visualizer_main.py <args>```
