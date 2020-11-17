@@ -20,3 +20,7 @@ lint:
 	$(isort) --check-only --df
 	$(black) --check --diff
 	mypy .
+
+
+docker:
+	docker build . -t luc-leonard/sound-visualizer:latest
