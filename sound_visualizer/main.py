@@ -1,28 +1,15 @@
 import argparse
 import datetime
 import logging
-import math
 import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
-from sound import SoundReader
 
-from sound_visualizer.sound import SpectralAnalysis, SpectralAnalyzer
-from sound_visualizer.utils import StopWatch
+from sound_visualizer.sound import SoundReader, SpectralAnalysis, SpectralAnalyzer
+from sound_visualizer.utils import StopWatch, convert_size
 
 LOGGER = logging.getLogger(__name__)
-
-
-def convert_size(size_bytes):
-    if size_bytes == 0:
-        return "0B"
-    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-    i = int(math.floor(math.log(size_bytes, 1024)))
-    p = math.pow(1024, i)
-    s = round(size_bytes / p, 2)
-    return "%s %s" % (s, size_name[i])
 
 
 def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
@@ -43,13 +30,6 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
 
     fig.colorbar(the_plot, shrink=0.5, aspect=5)
     plt.savefig(f'{output_folder}/{datetime.datetime.now().isoformat()}.png')
-
-
-def generate_heightmap(fft_data: np.ndarray):
-    image_data = np.floor((fft_data / (fft_data.max() / 255))).astype('uint8')
-    plt.contour(image_data)
-    plt.show()
-    Image.fromarray(image_data).show()
 
 
 def arg_parse():
@@ -123,8 +103,6 @@ def main():
         f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
     )
     save_3dplot(spectral_analysis, args.output_folder)
-
-    # generate_heightmap(filtered_fft)
 
 
 def init_logger():
