@@ -6,9 +6,8 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-from sound_visualizer.sound import SoundReader, SpectralAnalysis, SpectralAnalyzer
-from sound_visualizer.utils import StopWatch, convert_size
+from sound import SoundReader, SpectralAnalysis, SpectralAnalyzer
+from utils import StopWatch, convert_size
 
 LOGGER = logging.getLogger(__name__)
 

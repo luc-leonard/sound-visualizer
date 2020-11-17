@@ -1,7 +1,6 @@
 import numpy as np
 from pydantic import BaseModel, Field
-
-from sound_visualizer.sound.sound_reader import SoundReader
+from sound import SoundReader
 
 
 class SpectralAnalysis(BaseModel):
