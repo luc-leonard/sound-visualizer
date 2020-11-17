@@ -76,17 +76,17 @@ def arg_parse():
 
 
 def import_file_from_stdin(path):
-    output_file = open(path, mode='wb')
     data = sys.stdin.buffer.read()
-    output_file.write(data)
+    with open(path, mode='wb') as output_file:
+        output_file.write(data)
 
 
 def main():
     args = arg_parse()
     LOGGER.info(args)
     if os.getenv('_IN_DOCKER'):
-        import_file_from_stdin('./sound.wav')
-        args.filename = './sound.wav'
+        import_file_from_stdin('/sound.wav')
+        args.filename = 'sound.wav'
     spectral_analysis = compute_fft(args)
     LOGGER.info("applying filters...")
     if args.low_cut > 0:
