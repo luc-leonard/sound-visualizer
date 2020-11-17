@@ -41,4 +41,5 @@ FROM python:3.9-slim as prod
 COPY --from=builder "/opt/pysetup" "/opt/pysetup"
 COPY . /app/
 WORKDIR /app/
+ENV _IN_DOCKER=1
 ENTRYPOINT ["/opt/pysetup/.venv/bin/python", "sound_visualizer/main.py"]
