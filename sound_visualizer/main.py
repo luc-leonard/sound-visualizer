@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import logging
+import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -29,7 +30,9 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
     ax.set_zlabel("Amplitude")
 
     fig.colorbar(the_plot, shrink=0.5, aspect=5)
-    plt.savefig(f'{output_folder}/{datetime.datetime.now().isoformat()}.png')
+    filename = f'{output_folder}/{datetime.datetime.now().isoformat()}.png'
+    plt.savefig(filename)
+    return filename
 
 
 def arg_parse():
@@ -70,13 +73,40 @@ def arg_parse():
         help="the cut-off frequency. nothing above will be displayed",
         default='.',
     )
-
     return parser.parse_args()
+
+
+def import_file_from_stdin(path):
+    output_file = open(path, mode='wb')
+    data = sys.stdin.buffer.read()
+    output_file.write(data)
 
 
 def main():
     args = arg_parse()
     LOGGER.info(args)
+    if os.getenv('_IN_DOCKER'):
+        import_file_from_stdin('./sound.wav')
+        args.filename = './sound.wav'
+    spectral_analysis = compute_fft(args)
+    LOGGER.info("applying filters...")
+    if args.low_cut > 0:
+        spectral_analysis = spectral_analysis.low_cut(args.low_cut)
+    if args.high_cut > 0:
+        spectral_analysis = spectral_analysis.high_cut(args.high_cut)
+
+    LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
+    LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
+    LOGGER.info(
+        f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
+    )
+    saved_file = save_3dplot(spectral_analysis, args.output_folder)
+    if os.getenv('_IN_DOCKER'):
+        with open(saved_file, 'rb') as fin:
+            sys.stdout.buffer.write(fin.read())
+
+
+def compute_fft(args):
     spectral_analyzer = SpectralAnalyzer(
         overlap_factor=args.overlap_factor, frame_size=args.frame_size
     )
@@ -91,24 +121,13 @@ def main():
     LOGGER.info(
         f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
     )
-    LOGGER.info("applying filters...")
-    if args.low_cut > 0:
-        spectral_analysis = spectral_analysis.low_cut(args.low_cut)
-    if args.high_cut > 0:
-        spectral_analysis = spectral_analysis.high_cut(args.high_cut)
-
-    LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")
-    LOGGER.info(f"fft data shape = {spectral_analysis.fft_data.shape}")
-    LOGGER.info(
-        f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
-    )
-    save_3dplot(spectral_analysis, args.output_folder)
+    return spectral_analysis
 
 
 def init_logger():
     root = logging.getLogger()
     root.setLevel(level=logging.INFO)
-    handler = logging.StreamHandler(sys.stdout)
+    handler = logging.StreamHandler(sys.stderr)
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
