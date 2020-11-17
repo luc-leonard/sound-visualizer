@@ -26,7 +26,7 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 ### With poetry: 
 ```$ poetry run sound_visualizer_main.py <args>```
 ### With Docker
-```$ docker run -v <folder where you want to save images>:/output/ <image_name> <args> --output-folder /output/ ```
+```$ docker run -i luc-leonard/sound-visualizer:latest $ARGS < $PATH_TO_WAV > $PATH_TO_IMG ```
 
 ## Examples
 ![example_1](examples/example_1.png)
