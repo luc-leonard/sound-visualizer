@@ -1,5 +1,6 @@
 import numpy as np
 from pydantic import BaseModel, Field
+
 from sound_visualizer.sound import SoundReader
 
 
