@@ -32,5 +32,5 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 ![example_1](examples/example_greyscale_1.png)
 ![example_2](examples/example_greyscale_2.png)
 
-## Contributingexampl
+## Contributing
 For now, it is just a personal repository :) feel free to fork it anyway.
