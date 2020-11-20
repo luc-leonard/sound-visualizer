@@ -1,0 +1,4 @@
+setup:
+build:
+  docker:
+    web: Dockerfile
