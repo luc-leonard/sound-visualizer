@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import io
 import logging
 import os
 import sys
@@ -37,8 +38,10 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
 
 
 def generate_heightmap(fft_data: np.ndarray):
+    img_byte_arr = io.BytesIO()
     image_data = np.floor((fft_data / (fft_data.max() / 255))).astype('uint8')
-    ImageOps.expand(Image.fromarray(image_data), border=300, fill='red').show()
+    ImageOps.expand(Image.fromarray(image_data), border=300, fill='red').save(img_byte_arr, format='png')
+    return img_byte_arr
 
 
 def arg_parse():
@@ -93,8 +96,9 @@ def main():
     args = arg_parse()
     LOGGER.info(args)
     if os.getenv('_IN_DOCKER'):
-        import_file_from_stdin('/sound.wav')
+        import_file_from_stdin('./sound.wav')
         args.filename = 'sound.wav'
+
     spectral_analysis = compute_fft(args)
     LOGGER.info("applying filters...")
     if args.low_cut > 0:
@@ -107,10 +111,14 @@ def main():
     LOGGER.info(
         f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
     )
-    saved_file = save_3dplot(spectral_analysis, args.output_folder)
+    image_bytes = generate_heightmap(spectral_analysis.fft_data)
+
+
     if os.getenv('_IN_DOCKER'):
-        with open(saved_file, 'rb') as fin:
-            sys.stdout.buffer.write(fin.read())
+        sys.stdout.buffer.write(image_bytes.getbuffer())
+    else:
+        with open(f'{args.output_folder}/{datetime.datetime.now().isoformat()}.png', mode='wb') as output_file:
+            output_file.write(image_bytes.getbuffer())
 
 
 def compute_fft(args):
