@@ -13,7 +13,8 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 ```$ docker build . -t <image_name>```
 
 ## Usage
-### the arguments
+### as a CLI tool
+#### the arguments
 * --filename <filename>: the wav to analyse
 * --frame_size: the size of the frames that will be used for the FFT transform. It should be a power of 2 such as 1024 or 2048
  You should make it higher if you want to analyse lower frequencies.
@@ -23,10 +24,13 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 * --low-cut:  this will ignore lower frequencies when displaying data
 * --high-cut: this will ignore higher frequencies when displaying data
 * --output-folder: where to output the images
-### With poetry: 
+#### With poetry: 
 ```$ poetry run sound_visualizer_main.py <args>```
-### With Docker
+#### With Docker
 ```$ docker run -i luc-leonard/sound-visualizer:latest $ARGS < $PATH_TO_WAV > $PATH_TO_IMG ```
+
+### as a web server
+run ```make start_webserver``` and go to http://localhost:5000
 
 ## Examples
 ![example_1](examples/example_greyscale_1.png)
