@@ -10,6 +10,7 @@
 POETRY = poetry run
 isort = $(POETRY) isort sound_visualizer tests
 black = $(POETRY) black sound_visualizer tests
+VERSION = `poetry run python get_version.py`
 
 install:
 	poetry install
@@ -26,8 +27,10 @@ lint:
 
 
 docker:
-	docker build . -t luc-leonard/sound-visualizer:latest
+	docker build . -t lucleonard/sound-visualizer:$(VERSION)
 
+publish:
+	docker push lucleonard/sound-visualizer:$(VERSION)
 
 start_webserver: install
 	$(POETRY) gunicorn sound_visualizer.main_api:app
