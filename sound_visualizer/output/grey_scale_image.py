@@ -15,4 +15,5 @@ class GreyScaleImageGenerator(BaseModel):
         ImageOps.expand(
             Image.fromarray(image_data), border=self.border_width, fill=self.border_color
         ).save(img_byte_arr, format='png')
-        return img_byte_arr.getbuffer()
+        img_byte_arr.seek(0)
+        return img_byte_arr
