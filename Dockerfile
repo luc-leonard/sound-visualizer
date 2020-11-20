@@ -42,5 +42,8 @@ COPY --from=builder "/opt/pysetup" "/opt/pysetup"
 COPY . /app/
 WORKDIR /app/
 ENV _IN_DOCKER=1
+ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
-ENTRYPOINT ["/opt/pysetup/.venv/bin/python", "sound_visualizer/main.py"]
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+EXPOSE 8000
+CMD ["gunicorn", "-c", "gunicorn_config.py", "sound_visualizer.main_api:app"]

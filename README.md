@@ -5,12 +5,14 @@ the 3rd dimension will be time
 
 ## Installation
 
-You will need to have Poetry installed.
+You will need to have [Poetry](https://python-poetry.org/) installed.
+
 ```$ poetry install```
 
 
 You can also use docker. the image is not currently on dockerhub, but you can build it yourself:
-```$ docker build . -t <image_name>```
+
+```$ make docker```
 
 ## Usage
 ### as a CLI tool
@@ -24,13 +26,14 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 * --low-cut:  this will ignore lower frequencies when displaying data
 * --high-cut: this will ignore higher frequencies when displaying data
 * --output-folder: where to output the images
-#### With poetry: 
+
 ```$ poetry run sound_visualizer_main.py <args>```
-#### With Docker
-```$ docker run -i luc-leonard/sound-visualizer:latest $ARGS < $PATH_TO_WAV > $PATH_TO_IMG ```
 
 ### as a web server
+#### directly
 run ```make start_webserver``` and go to http://localhost:5000
+#### with docker
+
 
 ## Examples
 ![example_1](examples/example_greyscale_1.png)
