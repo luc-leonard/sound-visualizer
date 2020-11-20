@@ -11,6 +11,8 @@ POETRY = poetry run
 isort = $(POETRY) isort sound_visualizer tests
 black = $(POETRY) black sound_visualizer tests
 
+install:
+	poetry install
 
 format:
 	$(isort)
@@ -27,5 +29,5 @@ docker:
 	docker build . -t luc-leonard/sound-visualizer:latest
 
 
-start_webserver:
+start_webserver: install
 	$(POETRY) gunicorn sound_visualizer.main_api:app
