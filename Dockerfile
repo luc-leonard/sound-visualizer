@@ -42,4 +42,5 @@ COPY --from=builder "/opt/pysetup" "/opt/pysetup"
 COPY . /app/
 WORKDIR /app/
 ENV _IN_DOCKER=1
+ENV PYTHONPATH="$PYTHONPATH:."
 ENTRYPOINT ["/opt/pysetup/.venv/bin/python", "sound_visualizer/main.py"]
