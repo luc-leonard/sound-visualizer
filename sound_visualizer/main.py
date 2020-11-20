@@ -8,7 +8,6 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image, ImageOps
-
 from sound import SoundReader, SpectralAnalysis, SpectralAnalyzer
 from utils import StopWatch, convert_size
 
@@ -40,7 +39,9 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
 def generate_heightmap(fft_data: np.ndarray):
     img_byte_arr = io.BytesIO()
     image_data = np.floor((fft_data / (fft_data.max() / 255))).astype('uint8')
-    ImageOps.expand(Image.fromarray(image_data), border=300, fill='red').save(img_byte_arr, format='png')
+    ImageOps.expand(Image.fromarray(image_data), border=30, fill='red').save(
+        img_byte_arr, format='png'
+    )
     return img_byte_arr
 
 
@@ -113,11 +114,12 @@ def main():
     )
     image_bytes = generate_heightmap(spectral_analysis.fft_data)
 
-
     if os.getenv('_IN_DOCKER'):
         sys.stdout.buffer.write(image_bytes.getbuffer())
     else:
-        with open(f'{args.output_folder}/{datetime.datetime.now().isoformat()}.png', mode='wb') as output_file:
+        with open(
+            f'{args.output_folder}/{datetime.datetime.now().isoformat()}.png', mode='wb'
+        ) as output_file:
             output_file.write(image_bytes.getbuffer())
 
 
