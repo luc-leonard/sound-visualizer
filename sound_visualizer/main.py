@@ -84,12 +84,12 @@ def main():
     image_bytes = image_generator.create_image(spectral_analysis.fft_data)
 
     if os.getenv('_IN_DOCKER'):
-        sys.stdout.buffer.write(image_bytes)
+        sys.stdout.buffer.write(image_bytes.getbuffer())
     else:
         with open(
             f'{args.output_folder}/{datetime.datetime.now().isoformat()}.png', mode='wb'
         ) as output_file:
-            output_file.write(image_bytes)
+            output_file.write(image_bytes.getbuffer())
 
 
 def compute_fft(args):
