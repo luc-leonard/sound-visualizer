@@ -4,34 +4,12 @@ import logging
 import os
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
-from sound import SoundReader, SpectralAnalysis, SpectralAnalyzer
+from output.grey_scale_image import GreyScaleImageGenerator
+from sound import SoundReader, SpectralAnalyzer
 from utils import StopWatch, convert_size
 
 LOGGER = logging.getLogger(__name__)
-
-
-def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
-    (x, y) = np.meshgrid(
-        spectral_analysis.frequency_domain,
-        spectral_analysis.time_domain,
-    )
-
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(111, projection="3d")
-    ax.view_init(elev=20, azim=45)
-
-    the_plot = ax.plot_surface(x, y, spectral_analysis.fft_data, cmap="autumn", shade=True)
-    ax.set_title("Surface Plot in Matplotlib")
-    ax.set_xlabel("Frequency (hz)")
-    ax.set_ylabel("Time (s)")
-    ax.set_zlabel("Amplitude")
-
-    fig.colorbar(the_plot, shrink=0.5, aspect=5)
-    filename = f'{output_folder}/{datetime.datetime.now().isoformat()}.png'
-    plt.savefig(filename)
-    return filename
 
 
 def arg_parse():
@@ -72,6 +50,7 @@ def arg_parse():
         help="the cut-off frequency. nothing above will be displayed",
         default='.',
     )
+
     return parser.parse_args()
 
 
@@ -85,8 +64,9 @@ def main():
     args = arg_parse()
     LOGGER.info(args)
     if os.getenv('_IN_DOCKER'):
-        import_file_from_stdin('/sound.wav')
+        import_file_from_stdin('./sound.wav')
         args.filename = 'sound.wav'
+
     spectral_analysis = compute_fft(args)
     LOGGER.info("applying filters...")
     if args.low_cut > 0:
@@ -99,10 +79,16 @@ def main():
     LOGGER.info(
         f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
     )
-    saved_file = save_3dplot(spectral_analysis, args.output_folder)
+    image_generator = GreyScaleImageGenerator(border_color='red', border_width=30)
+    image_bytes = image_generator.create_image(spectral_analysis.fft_data)
+
     if os.getenv('_IN_DOCKER'):
-        with open(saved_file, 'rb') as fin:
-            sys.stdout.buffer.write(fin.read())
+        sys.stdout.buffer.write(image_bytes)
+    else:
+        with open(
+            f'{args.output_folder}/{datetime.datetime.now().isoformat()}.png', mode='wb'
+        ) as output_file:
+            output_file.write(image_bytes)
 
 
 def compute_fft(args):

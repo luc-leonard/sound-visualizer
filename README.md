@@ -29,8 +29,8 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 ```$ docker run -i luc-leonard/sound-visualizer:latest $ARGS < $PATH_TO_WAV > $PATH_TO_IMG ```
 
 ## Examples
-![example_1](examples/example_1.png)
-![example_2](examples/example_2.png)
+![example_1](examples/example_greyscale_1.png)
+![example_2](examples/example_greyscale_2.png)
 
 ## Contributing
 For now, it is just a personal repository :) feel free to fork it anyway.
