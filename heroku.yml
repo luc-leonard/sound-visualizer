@@ -2,3 +2,4 @@ setup:
 build:
   docker:
     web: Dockerfile
+    target: prod
