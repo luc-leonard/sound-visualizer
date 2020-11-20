@@ -6,6 +6,8 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image, ImageOps
+
 from sound import SoundReader, SpectralAnalysis, SpectralAnalyzer
 from utils import StopWatch, convert_size
 
@@ -32,6 +34,11 @@ def save_3dplot(spectral_analysis: SpectralAnalysis, output_folder: str):
     filename = f'{output_folder}/{datetime.datetime.now().isoformat()}.png'
     plt.savefig(filename)
     return filename
+
+
+def generate_heightmap(fft_data: np.ndarray):
+    image_data = np.floor((fft_data / (fft_data.max() / 255))).astype('uint8')
+    ImageOps.expand(Image.fromarray(image_data), border=300, fill='red').show()
 
 
 def arg_parse():
@@ -72,6 +79,7 @@ def arg_parse():
         help="the cut-off frequency. nothing above will be displayed",
         default='.',
     )
+
     return parser.parse_args()
 
 
