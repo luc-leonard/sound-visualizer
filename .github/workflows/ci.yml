@@ -41,8 +41,8 @@ jobs:
       - name: Install dependencies
         run: poetry install
       
-      - name: format and lint
-        run: poetry run make format lint
+      - name: lint
+        run: poetry run make lint
 
       - name: pytest
         run: poetry run pytest
