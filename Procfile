@@ -1,1 +1,1 @@
-webb: gunicorn sound_visualizer.main_api:app
+web: gunicorn -c gunicorn_config.py sound_visualizer.main_api:app
