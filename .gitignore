@@ -3,3 +3,4 @@ sounds/*
 .mypy_cache
 .idea
 __pycache__
+.pytest_cache

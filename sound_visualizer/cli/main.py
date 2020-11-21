@@ -1,7 +1,7 @@
 import argparse
 import datetime
+import io
 import logging
-import os
 import sys
 
 import numpy as np
@@ -65,9 +65,6 @@ def import_file_from_stdin(path):
 def main():
     args = arg_parse()
     LOGGER.info(args)
-    if os.getenv('_IN_DOCKER'):
-        import_file_from_stdin('./sound.wav')
-        args.filename = 'sound.wav'
 
     spectral_analysis = compute_fft(args)
     LOGGER.info("applying filters...")
@@ -82,11 +79,10 @@ def main():
         f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
     )
     image_generator = GreyScaleImageGenerator(border_color='red', border_width=30)
-    image_bytes = image_generator.create_image(spectral_analysis.fft_data)
-
-    if os.getenv('_IN_DOCKER'):
-        sys.stdout.buffer.write(image_bytes.getbuffer())
-    else:
+    image = image_generator.create_image(spectral_analysis.fft_data)
+    with io.BytesIO() as image_bytes:
+        image.save(image_bytes, format='png')
+        image_bytes.seek(0)
         with open(
             f'{args.output_folder}/{datetime.datetime.now().isoformat()}.png', mode='wb'
         ) as output_file:
