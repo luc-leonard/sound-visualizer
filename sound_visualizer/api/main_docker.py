@@ -26,7 +26,7 @@ def get_form():
        '''
 
 
-converters = {'audio/mpeg': Mp3Converter().convert, 'wav': lambda x: x}
+converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': lambda x: x}
 
 
 @app.route('/', methods=['POST'])
