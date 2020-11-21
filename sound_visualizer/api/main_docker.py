@@ -1,3 +1,4 @@
+import io
 import logging
 
 from flask import Flask, Response, abort, request, send_file
@@ -49,7 +50,10 @@ def post_image():
         spectral_analyzis = spectral_analyzis.high_cut(2000)
         image_generator = GreyScaleImageGenerator(border_width=10, border_color='red')
         image = image_generator.create_image(spectral_analyzis.fft_data)
-        return send_file(image, attachment_filename='_result.png', cache_timeout=0)
+        image_bytes = io.BytesIO()
+        image.save(image_bytes, format='png')
+        image_bytes.seek(0)
+        return send_file(image_bytes, attachment_filename='_result.png', cache_timeout=0)
     except Exception as e:
         logger.warn(e)
         abort(Response(str(e), status=500))
