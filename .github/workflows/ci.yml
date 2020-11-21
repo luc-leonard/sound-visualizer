@@ -22,7 +22,8 @@ jobs:
         with:
           python-version: 3.9
       - name: Install ffmpeg
-        run: apt install ffmpeg
+        run: sudo apt install ffmpeg
+
       - name: Install Poetry
         uses: abatilo/actions-poetry@v2.0.0
 
