@@ -56,7 +56,7 @@ def post_image():
 
         filename = converters[mime_type](filename)
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
-        sound_reader = SoundReader(**{**request.args.to_dict(), 'filename': filename})
+        sound_reader = SoundReader(**{**request.form.to_dict(), 'filename': filename})
         logger.debug(f'sound_reader = {sound_reader}')
         spectral_analyzis = spectral_analyser.get_spectrogram_data(sound_reader)
         spectral_analyzis = spectral_analyzis.high_cut(2000)
