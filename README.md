@@ -12,7 +12,8 @@ You will need to have [Poetry](https://python-poetry.org/) installed.
 ```$ poetry install```
 
 
-You can also use docker. the image is not currently on dockerhub, but you can build it yourself:
+You can also use docker. There is an image on dockerhub [here](https://hub.docker.com/repository/docker/lucleonard/sound-visualizer)
+You can also make your own image by using
 
 ```$ make docker```
 
@@ -36,8 +37,7 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 run ```make start_webserver``` and go to http://localhost:5000
 #### with docker
 
-You can use ```docker run -p 5000:5000 lucleonard/sound-visualizer``` and go to http://localhost:5000
-if you want to build your own image, you can run ```make docker```
+You can use ```docker run -p 5000:80 lucleonard/sound-visualizer``` and go to http://localhost:5000
 
 The web application is also deployed at https://luc-leonard-sound-visualizer.herokuapp.com/
 
