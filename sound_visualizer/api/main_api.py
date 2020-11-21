@@ -1,8 +1,8 @@
 from flask import Flask, request, send_file
 from werkzeug.utils import secure_filename
 
-from sound_visualizer.output.grey_scale_image import GreyScaleImageGenerator
-from sound_visualizer.sound import SoundReader, SpectralAnalyzer
+from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
+from sound_visualizer.app.sound import SoundReader, SpectralAnalyzer
 
 app = Flask(__name__)
 

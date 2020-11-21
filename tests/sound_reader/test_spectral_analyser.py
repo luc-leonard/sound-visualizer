@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from pytest_mock import MockerFixture
 
-from sound_visualizer.sound import SoundReader
-from sound_visualizer.sound.spectral_analyser import SpectralAnalyzer, get_spectogram_data
+from sound_visualizer.app.sound import SoundReader
+from sound_visualizer.app.sound.spectral_analyser import SpectralAnalyzer, get_spectogram_data
 from tests.sound_reader.util import generate_sound
 
 
