@@ -1,1 +1,1 @@
-web: gunicorn  sound_visualizer.main_api:app --log-file -
+web: gunicorn  sound_visualizer.api.main_api:app --log-file -

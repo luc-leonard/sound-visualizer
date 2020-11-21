@@ -46,4 +46,4 @@ ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 EXPOSE 8000
-CMD ["gunicorn", "-c", "gunicorn_config.py", "sound_visualizer.main_api:app"]
+CMD ["gunicorn", "-c", "gunicorn_config.py", "sound_visualizer.api.main_api:app"]
