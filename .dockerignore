@@ -1,1 +1,3 @@
 sounds/*
+# main for CLI
+sound_visualizer/main.py
