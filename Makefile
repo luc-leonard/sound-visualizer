@@ -27,10 +27,11 @@ lint:
 
 
 docker:
-	docker build . -t lucleonard/sound-visualizer:$(VERSION)
+	docker build . -t lucleonard/sound-visualizer:$(VERSION) -t lucleonard/sound-visualizer:latest
 
 publish:
 	docker push lucleonard/sound-visualizer:$(VERSION)
+	docker push lucleonard/sound-visualizer:latest
 
 start_webserver: install
 	$(POETRY) gunicorn sound_visualizer.main_api:app
