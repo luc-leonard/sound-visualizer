@@ -40,7 +40,7 @@ publisher = pubsub_v1.PublisherClient()
 
 @app.route('/', methods=['POST'])
 def post_image():
-    print(os.environ)
+    logger.warning(os.environ)
 
     topic_path = publisher.topic_path('luc-leonard-sound-visualizer', 'my-topic')
     print(topic_path)
