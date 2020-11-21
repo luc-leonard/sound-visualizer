@@ -41,6 +41,7 @@ converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': lambda x: x}
 
 @app.route('/', methods=['POST'])
 def post_image():
+    logger.debug(request.form)
     if 'youtube_url' in request.form:
         filename = YoutubeDownloader().download(request.form['youtube_url'])
         mime_type = 'audio/mpeg'
@@ -55,8 +56,8 @@ def post_image():
 
         filename = converters[mime_type](filename)
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
-        print(spectral_analyser)
         sound_reader = SoundReader(**{**request.args.to_dict(), 'filename': filename})
+        logger.debug(f'sound_reader = {sound_reader}')
         spectral_analyzis = spectral_analyser.get_spectrogram_data(sound_reader)
         spectral_analyzis = spectral_analyzis.high_cut(2000)
         image_generator = GreyScaleImageGenerator(border_width=10, border_color='red')
