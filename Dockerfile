@@ -45,5 +45,5 @@ ENV _IN_DOCKER=1
 ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
-EXPOSE 8000
+EXPOSE 80
 CMD ["gunicorn", "-c", "gunicorn_docker_config.py", "sound_visualizer.api.main_api:app"]
