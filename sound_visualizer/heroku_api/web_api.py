@@ -1,4 +1,5 @@
 import logging
+import os
 import random
 
 from flask import Flask
@@ -39,6 +40,8 @@ publisher = pubsub_v1.PublisherClient()
 
 @app.route('/', methods=['POST'])
 def post_image():
+    print(os.environ)
+
     topic_path = publisher.topic_path('luc-leonard-sound-visualizer', 'my-topic')
     print(topic_path)
     data = "Message number {}".format(random.randint(0, 100))
