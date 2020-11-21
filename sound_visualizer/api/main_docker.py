@@ -22,6 +22,7 @@ def get_form():
          <input type=text name=length_second>
          <input type=submit value=Upload>
        </form>
+       <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
        '''
 
 
