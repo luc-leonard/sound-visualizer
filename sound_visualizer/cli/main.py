@@ -9,6 +9,7 @@ import numpy as np
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SoundReader, SpectralAnalyzer
 from sound_visualizer.utils import StopWatch, convert_size
+from sound_visualizer.utils.logger import init_logger
 
 LOGGER = logging.getLogger(__name__)
 
@@ -108,16 +109,6 @@ def compute_fft(args):
         f"main frequency of frame 0 {spectral_analysis.frequency_domain[np.argmax(spectral_analysis.fft_data[0])]}"
     )
     return spectral_analysis
-
-
-def init_logger():
-    root = logging.getLogger()
-    root.setLevel(level=logging.INFO)
-    handler = logging.StreamHandler(sys.stderr)
-    handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    root.addHandler(handler)
 
 
 if __name__ == "__main__":
