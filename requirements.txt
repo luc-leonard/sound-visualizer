@@ -221,3 +221,6 @@ typing-extensions==3.7.4.3 \
 werkzeug==1.0.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" \
     --hash=sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43 \
     --hash=sha256:6c80b1e5ad3665290ea39320b91e1be1e0d5f60652b964a3070216de83d2e47c
+youtube-dl==2020.11.19 \
+    --hash=sha256:e20c4178669749e34878c88bea165382aadeffbe2bf8074443d2fa1c53e974fc \
+    --hash=sha256:2d6adbf7643467fa448939ebe6bebb002071b11dadf545909ca973f101b2584c
