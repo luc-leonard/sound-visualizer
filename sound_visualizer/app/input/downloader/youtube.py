@@ -2,10 +2,13 @@ import logging
 
 import youtube_dl
 
+logger = logging.getLogger(__name__)
+
 
 class YoutubeHook:
     def __call__(self, *args, **kwargs):
         data = args[0]
+        logger.debug(data)
         if data['status'] == 'finished':
             self.final_status = data
 
@@ -27,5 +30,8 @@ class YoutubeDownloader:
             'progress_hooks': [hook],
         }
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            logger.info(f'Starting download of {url}')
             ydl.download([url])
-            return hook.final_status['filename'][0:-4] + '.mp3'
+            processed_filename = hook.final_status['filename'][0:-4] + 'mp3'
+            logger.info(f'{url} downloaded at {processed_filename}')
+            return processed_filename
