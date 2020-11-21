@@ -6,8 +6,9 @@ import sys
 
 import numpy as np
 
+from sound_visualizer.app.input import SoundReader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
-from sound_visualizer.app.sound import SoundReader, SpectralAnalyzer
+from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.utils import StopWatch, convert_size
 from sound_visualizer.utils.logger import init_logger
 

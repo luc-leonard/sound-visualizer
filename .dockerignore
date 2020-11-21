@@ -1,3 +1,9 @@
 sounds/*
 # main for CLI
 sound_visualizer/main.py
+
+.ipynb_checkpoints
+.mypy_cache
+.idea
+__pycache__
+.pytest_cache
