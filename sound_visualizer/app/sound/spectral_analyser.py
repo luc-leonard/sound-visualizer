@@ -1,7 +1,12 @@
+import logging
+
 import numpy as np
 from pydantic import BaseModel, Field
 
+from sound_visualizer import utils
 from sound_visualizer.app.input import SoundReader
+
+logger = logging.getLogger(__name__)
 
 
 class SpectralAnalysis(BaseModel):
@@ -74,7 +79,9 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
         shape=(int(cols), frame_size),
         strides=(samples.strides[0] * hopSize, samples.strides[0]),
     ).copy()
+    logger.info(f'total frames size = {utils.size.convert_size(frames.nbytes)}')
     # we apply a 'window' (in the mathematical sense) function. its purpose is to make sure our lines are smooth
     frames *= np.hamming(frame_size)
+
     full_fft_data = 10 * np.log(10) * np.abs(np.fft.rfft(frames))
     return full_fft_data

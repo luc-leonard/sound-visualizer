@@ -4,9 +4,11 @@ import logging
 from flask import Flask, Response, abort, request, send_file
 from werkzeug.utils import secure_filename
 
+from sound_visualizer.app.input import SoundReader
+from sound_visualizer.app.input.converter import Mp3Converter
+from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
-from sound_visualizer.app.sound import SoundReader, SpectralAnalyzer
-from sound_visualizer.app.sound.converter.mp3 import Mp3Converter
+from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.utils.logger import init_logger
 
 app = Flask(__name__)
@@ -22,6 +24,8 @@ def get_form():
        <h1>Upload new File</h1>
        <form method=post enctype=multipart/form-data>
          <input type=file name=sound_file>
+         <label>URL youtube </label>
+         <input type=text name=youtube_url>
          <label>start (s)</label>
          <input type=text name=start_second value=0>
          <label>length (s)</label>
@@ -37,12 +41,19 @@ converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': lambda x: x}
 
 @app.route('/', methods=['POST'])
 def post_image():
-    print(request.files)
-    sound_file = request.files['sound_file']
+    if 'youtube_url' in request.form:
+        filename = YoutubeDownloader().download(request.form['youtube_url'])
+        mime_type = 'audio/mpeg'
+    elif 'sound_file' in request.files:
+        sound_file = request.files['sound_file']
+        filename = '/tmp/' + secure_filename(sound_file.filename)
+        sound_file.save(filename)
+        mime_type = sound_file.mimetype
+    else:
+        abort(Response('you need to either upload a file or put a youtube URL', status=400))
     try:
-        filename = secure_filename(sound_file.filename)
-        sound_file.save('/tmp/' + filename)
-        filename = converters[sound_file.mimetype](f'/tmp/{filename}')
+
+        filename = converters[mime_type](filename)
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
         print(spectral_analyser)
         sound_reader = SoundReader(**{**request.args.to_dict(), 'filename': filename})
