@@ -36,12 +36,10 @@ def get_form():
 converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': lambda x: x}
 
 
-
-
 @app.route('/', methods=['POST'])
 def post_image():
-    publisher = pubsub_v1.PublisherClient()
     logger.warning(os.environ)
+    publisher = pubsub_v1.PublisherClient()
     topic_path = publisher.topic_path('luc-leonard-sound-visualizer', 'my-topic')
     print(topic_path)
     data = "Message number {}".format(random.randint(0, 100))
