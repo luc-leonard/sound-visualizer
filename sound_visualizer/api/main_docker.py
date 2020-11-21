@@ -3,6 +3,7 @@ from werkzeug.utils import secure_filename
 
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SoundReader, SpectralAnalyzer
+from sound_visualizer.app.sound.converter.mp3 import Mp3Converter
 
 app = Flask(__name__)
 
@@ -14,7 +15,7 @@ def get_form():
        <title>Upload new File</title>
        <h1>Upload new File</h1>
        <form method=post enctype=multipart/form-data>
-         <input type=file name=wav_file>
+         <input type=file name=sound_file>
          <label>start (s)</label>
          <input type=text name=start_second value=0>
          <label>length (s)</label>
@@ -24,15 +25,20 @@ def get_form():
        '''
 
 
+converters = {'audio/mpeg': Mp3Converter().convert, 'wav': lambda x: x}
+
+
 @app.route('/', methods=['POST'])
 def post_image():
     print(request.files)
-    wav_file = request.files['wav_file']
-    filename = secure_filename(wav_file.filename)
-    wav_file.save('/tmp/' + filename)
+    sound_file = request.files['sound_file']
+
+    filename = secure_filename(sound_file.filename)
+    sound_file.save('/tmp/' + filename)
+    filename = converters[sound_file.mimetype](f'/tmp/{filename}')
     spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
     print(spectral_analyser)
-    sound_reader = SoundReader(**{**request.args.to_dict(), 'filename': '/tmp/' + filename})
+    sound_reader = SoundReader(**{**request.args.to_dict(), 'filename': filename})
     spectral_analyzis = spectral_analyser.get_spectrogram_data(sound_reader)
     spectral_analyzis = spectral_analyzis.high_cut(2000)
     image_generator = GreyScaleImageGenerator(border_width=10, border_color='red')
