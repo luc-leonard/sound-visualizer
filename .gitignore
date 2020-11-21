@@ -4,3 +4,4 @@ sounds/*
 .idea
 __pycache__
 .pytest_cache
+examples/luc-leonard-sound-visualizer-credentials.json
