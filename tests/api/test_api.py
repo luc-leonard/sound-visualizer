@@ -31,3 +31,10 @@ def test_should_return_ok_for_mp3(client, datadir):
     data['sound_file'] = (open(datadir / 're_mi.mp3', 'rb'), 'test.mp3')
     res = client.post('/', content_type='multipart/form-data', data=data)
     assert res.status_code == 200
+
+
+def test_should_return_ok_for_youtube_url(client, datadir):
+    data = {}
+    data['youtube_url'] = 'https://www.youtube.com/watch?v=tkG4EMP2tC8'
+    res = client.post('/', content_type='multipart/form-data', data=data)
+    assert res.status_code == 200
