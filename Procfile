@@ -1,0 +1,1 @@
+web: gunicorn  sound_visualizer.main_api:app --log-file -

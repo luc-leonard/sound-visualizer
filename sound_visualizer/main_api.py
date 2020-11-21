@@ -15,10 +15,10 @@ def get_form():
        <h1>Upload new File</h1>
        <form method=post enctype=multipart/form-data>
          <input type=file name=wav_file>
-         <label>overlap factor</label>
-         <input type=text name=overlap_factor>
-         <label>frame size</label>
-         <input type=text name=frame_size>
+         <label>start (s)</label>
+         <input type=text name=start_second value=0>
+         <label>length (s)</label>
+         <input type=text name=length_second>
          <input type=submit value=Upload>
        </form>
        '''
@@ -30,7 +30,7 @@ def post_image():
     wav_file = request.files['wav_file']
     filename = secure_filename(wav_file.filename)
     wav_file.save('/tmp/' + filename)
-    spectral_analyser = SpectralAnalyzer(**request.form.to_dict())
+    spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
     print(spectral_analyser)
     sound_reader = SoundReader(**{**request.args.to_dict(), 'filename': '/tmp/' + filename})
     spectral_analyzis = spectral_analyser.get_spectrogram_data(sound_reader)

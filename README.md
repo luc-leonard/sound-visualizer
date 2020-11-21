@@ -1,7 +1,9 @@
 # sound-visualiser (name to be determined)
 
 sound-visualizer aims to procude 3d images (render or real time) of sound files. It will display the frequency domain. 
-the 3rd dimension will be time
+the 3rd dimension will be time.
+
+Currently, it generates spectrogram of wholes track, as greyscale images. It can be used as a CLI tool, or as a web app. 
 
 ## Installation
 
@@ -34,6 +36,10 @@ You can also use docker. the image is not currently on dockerhub, but you can bu
 run ```make start_webserver``` and go to http://localhost:5000
 #### with docker
 
+You can use ```docker run -p 5000:5000 lucleonard/sound-visualizer``` and go to http://localhost:5000
+if you want to build your own image, you can run ```make docker```
+
+The web application is also deployed at https://luc-leonard-sound-visualizer.herokuapp.com/
 
 ## Examples
 ![example_1](examples/example_greyscale_1.png)
