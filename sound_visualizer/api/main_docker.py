@@ -37,7 +37,7 @@ def get_form():
        '''
 
 
-converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': NullConverter().convert}
+converters = {'audio/mpeg': Mp3Converter, 'audio/x-wav': NullConverter}
 
 
 @app.route('/', methods=['POST'])
@@ -55,7 +55,7 @@ def post_image():
         return abort(Response('you need to either upload a file or put a youtube URL', status=400))
     try:
 
-        filename = converters[mime_type](filename, **request.form)
+        filename = converters[mime_type](**{**request.form, 'filename': filename}).convert()
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
         sound_reader = SoundReader(**{**request.form.to_dict(), 'filename': filename})
         logger.debug(f'sound_reader = {sound_reader}')

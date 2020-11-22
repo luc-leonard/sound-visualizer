@@ -1,7 +1,14 @@
 from abc import abstractmethod
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-class Converter:
+class Converter(BaseModel):
+    filename: str
+    start: Optional[int] = 0
+    length: Optional[int] = -1
+
     @abstractmethod
-    def convert(self, filename: str, start: int = 0, length: int = -1) -> str:
+    def convert(self) -> str:
         pass
