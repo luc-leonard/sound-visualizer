@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 
 from sound_visualizer.app.input import SoundReader
 from sound_visualizer.app.input.converter import Mp3Converter
+from sound_visualizer.app.input.converter.null_converter import NullConverter
 from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
@@ -36,7 +37,7 @@ def get_form():
        '''
 
 
-converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': lambda x: x}
+converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': NullConverter().convert}
 
 
 @app.route('/', methods=['POST'])
@@ -51,10 +52,10 @@ def post_image():
         sound_file.save(filename)
         mime_type = sound_file.mimetype
     else:
-        abort(Response('you need to either upload a file or put a youtube URL', status=400))
+        return abort(Response('you need to either upload a file or put a youtube URL', status=400))
     try:
 
-        filename = converters[mime_type](filename)
+        filename = converters[mime_type](filename, **request.form)
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
         sound_reader = SoundReader(**{**request.form.to_dict(), 'filename': filename})
         logger.debug(f'sound_reader = {sound_reader}')

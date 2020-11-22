@@ -30,3 +30,15 @@ def test_should_convert_mp3(datadir):
         == analysis_origin_file.frequency_domain[np.argmax(analysis_origin_file.fft_data[0])]
     )
     os.unlink(converted_file)
+
+
+def test_mp3_converter_should_trim(datadir):
+    converted_file = Mp3Converter().convert(f'{datadir}/re_mi.mp3', start=0, length=1)
+    data = SoundReader(filename=converted_file).get_data()
+    assert data.length > 0.9 and data.length < 1.1
+
+
+def test_mp3_converter_should_trim_with_start_len(datadir):
+    converted_file = Mp3Converter().convert(f'{datadir}/re_mi.mp3', start=2, length=-1)
+    data = SoundReader(filename=converted_file).get_data()
+    assert data.length > 0.9 and data.length < 1.1
