@@ -54,8 +54,9 @@ def post_image():
     else:
         return abort(Response('you need to either upload a file or put a youtube URL', status=400))
     try:
-
-        filename = converters[mime_type](**{**request.form, 'filename': filename}).convert()
+        converter = converters[mime_type](**{**request.form, 'filename': filename})
+        logger.info(f'using {converter} to convert')
+        filename = converter.convert()
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
         sound_reader = SoundReader(**{**request.form.to_dict(), 'filename': filename})
         logger.debug(f'sound_reader = {sound_reader}')
