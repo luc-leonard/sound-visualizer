@@ -1,8 +1,8 @@
 import io
 import json
 import logging
-import random
 import threading
+from uuid import uuid4
 
 from flask import Flask, redirect, request, send_file
 from google.cloud import pubsub_v1
@@ -65,7 +65,7 @@ def get_image(result_id):
 @app.route('/', methods=['POST'])
 def post_image():
     data = request.form.to_dict()
-    data['result_id'] = 'result_' + str(random.randint(0, 100))
+    data['result_id'] = 'result_' + str(uuid4())
 
     if len(request.form['youtube_url']) == 0:
         # upload to object storage
