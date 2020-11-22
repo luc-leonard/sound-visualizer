@@ -13,10 +13,10 @@ class Mp3Converter(Converter):
         the_filename = f'/tmp/{str(uuid.uuid4())}.wav'
         logger.info(f'converting {self.filename} to wav')
         input = ffmpeg.input(self.filename)
-        if self.length != -1:
-            input = input.filter('atrim', start=self.start, duration=self.length)
-        elif self.start != 0:
-            input = input.filter('atrim', start=self.start)
+        if self.length_second != -1:
+            input = input.filter('atrim', start=self.start_second, duration=self.length_second)
+        elif self.start_second != 0:
+            input = input.filter('atrim', start=self.start_second)
         logger.debug(input.output(the_filename, loglevel='info'))
         input.output(the_filename, loglevel='info').run()
         logger.info(f'{self.filename} converted to wav at {the_filename}')
