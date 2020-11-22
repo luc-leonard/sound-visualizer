@@ -27,9 +27,9 @@ def get_form():
          <label>URL youtube </label>
          <input type=text name=youtube_url>
          <label>start (s)</label>
-         <input type=text name=start_second value=0>
+         <input type=text name=start_second value='0'>
          <label>length (s)</label>
-         <input type=text name=length_second>
+         <input type=text name=length_second value='-1'>
          <input type=submit value=Upload>
        </form>
        <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
@@ -51,12 +51,15 @@ def upload_file(filename, path):
 
 @app.route('/result/<result_id>', methods=['GET'])
 def get_image(result_id):
-    logger.info('GETTING IMAGE')
-    data = io.BytesIO()
-    blob = bucket.blob(result_id + '.png')
-    blob.download_to_file(data)
-    data.seek(0)
-    return send_file(data, attachment_filename='_result.png', cache_timeout=0)
+    try:
+        logger.info('GETTING IMAGE')
+        data = io.BytesIO()
+        blob = bucket.blob(result_id + '.png')
+        blob.download_to_file(data)
+        data.seek(0)
+        return send_file(data, attachment_filename='_result.png', cache_timeout=0)
+    except Exception as e:
+        return f'Please try again later {e}'
 
 
 @app.route('/', methods=['POST'])
@@ -71,12 +74,13 @@ def post_image():
         sound_file.save(filename)
         data['filename'] = sound_file.filename
 
-        def _thread(data_cpy):
+    def _thread(data_cpy):
+        if len(data_cpy['youtube_url']) == 0:
             upload_file(sound_file.filename, filename)
-            publisher.publish(topic_path, json.dumps(data).encode("utf-8"))
+        publisher.publish(topic_path, json.dumps(data_cpy).encode("utf-8"))
 
-        threading.Thread(target=_thread, args=(data,)).start()
-        return redirect('/result/' + data['result_id'])
+    threading.Thread(target=_thread, args=(data,)).start()
+    return redirect('/result/' + data['result_id'])
 
 
 if __name__ == '__main__':
