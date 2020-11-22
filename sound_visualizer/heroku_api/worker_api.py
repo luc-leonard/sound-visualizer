@@ -33,7 +33,7 @@ def callback(message):
             del data['filename']
         else:
             filename = YoutubeDownloader().download(data['youtube_url'])
-            filename = Mp3Converter(filename=filename, **data).convert()
+        filename = Mp3Converter(filename=filename, **data).convert()
         sound_reader = SoundReader(filename=filename, **data)
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
         spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
@@ -46,8 +46,6 @@ def callback(message):
             bucket.blob(data['result_id'] + '.png').upload_from_file(bytes)
     except Exception as e:
         logger.error('error handling message', e)
-    finally:
-        message.ack()
 
 
 if __name__ == '__main__':
