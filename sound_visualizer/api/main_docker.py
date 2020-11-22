@@ -30,7 +30,7 @@ def get_form():
          <label>start (s)</label>
          <input type=text name=start_second value=0>
          <label>length (s)</label>
-         <input type=text name=length_second>
+         <input type=text name=length_second value=-1>
          <input type=submit value=Upload>
        </form>
        <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
