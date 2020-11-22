@@ -34,4 +34,4 @@ publish:
 	docker push lucleonard/sound-visualizer:latest
 
 start_webserver: install
-	$(POETRY) gunicorn sound_visualizer.main_api:app
+	$(POETRY) gunicorn sound_visualizer.api.main_docker:app
