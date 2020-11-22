@@ -43,7 +43,8 @@ converters = {'audio/mpeg': Mp3Converter, 'audio/x-wav': NullConverter}
 @app.route('/', methods=['POST'])
 def post_image():
     logger.debug(request.form)
-    if 'youtube_url' in request.form:
+    logger.debug(request.files)
+    if 'youtube_url' in request.form and len(request.form['youtube_url']) > 0:
         filename = YoutubeDownloader().download(request.form['youtube_url'])
         mime_type = 'audio/mpeg'
     elif 'sound_file' in request.files:
