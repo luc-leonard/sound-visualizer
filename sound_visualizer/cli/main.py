@@ -97,7 +97,11 @@ def compute_fft(args):
     stopwatch = StopWatch()
     with stopwatch:
         spectral_analysis = spectral_analyzer.get_spectrogram_data(
-            SoundReader(filename=args.filename, start_second=args.start, length_second=args.length)
+            SoundReader(
+                filename=args.filename,
+                start_second=args.start_second,
+                length_second=args.length_second,
+            )
         )
     LOGGER.info(f"fft transformation took {stopwatch.interval}")
     LOGGER.info(f"fft data size = {convert_size(spectral_analysis.fft_data.nbytes)}")

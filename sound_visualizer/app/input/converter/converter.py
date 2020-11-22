@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 class Converter(BaseModel):
     filename: str
-    start: Optional[int] = 0
-    length: Optional[int] = -1
+    start_second: Optional[int] = 0
+    length_second: Optional[int] = -1
 
     @abstractmethod
     def convert(self) -> str:

@@ -33,12 +33,16 @@ def test_should_convert_mp3(datadir):
 
 
 def test_mp3_converter_should_trim(datadir):
-    converted_file = Mp3Converter(filename=f'{datadir}/re_mi.mp3', start=0, length=1).convert()
+    converted_file = Mp3Converter(
+        filename=f'{datadir}/re_mi.mp3', start_second=0, length_second=1
+    ).convert()
     data = SoundReader(filename=converted_file).get_data()
     assert data.length > 0.9 and data.length < 1.1
 
 
 def test_mp3_converter_should_trim_with_start_len(datadir):
-    converted_file = Mp3Converter(filename=f'{datadir}/re_mi.mp3', start=2, length=-1).convert()
+    converted_file = Mp3Converter(
+        filename=f'{datadir}/re_mi.mp3', start_second=2, length_second=-1
+    ).convert()
     data = SoundReader(filename=converted_file).get_data()
     assert data.length > 0.9 and data.length < 1.1
