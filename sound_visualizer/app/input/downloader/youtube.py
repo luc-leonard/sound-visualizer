@@ -19,19 +19,12 @@ class YoutubeDownloader:
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': '/tmp/%(title)s-%(id)s.%(ext)s',
-            'postprocessors': [
-                {
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '192',
-                }
-            ],
             'logger': logging.getLogger(__name__),
             'progress_hooks': [hook],
         }
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             logger.info(f'Starting download of {url}')
             ydl.download([url])
-            processed_filename = hook.final_status['filename'][0:-4] + 'mp3'
+            processed_filename = hook.final_status['filename']
             logger.info(f'{url} downloaded at {processed_filename}')
             return processed_filename
