@@ -5,7 +5,6 @@ import random
 from flask import Flask
 from google.cloud import pubsub_v1
 
-from sound_visualizer.app.input.converter import Mp3Converter
 from sound_visualizer.utils.logger import init_logger
 
 app = Flask(__name__)
@@ -31,9 +30,6 @@ def get_form():
        </form>
        <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
        '''
-
-
-converters = {'audio/mpeg': Mp3Converter().convert, 'audio/x-wav': lambda x: x}
 
 
 @app.route('/', methods=['POST'])
