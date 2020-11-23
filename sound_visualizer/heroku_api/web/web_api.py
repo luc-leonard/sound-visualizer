@@ -16,10 +16,27 @@ app = MyApp(__name__)
 
 logger = logging.getLogger(__name__)
 
+config = config_from_env()
+client = pymongo.MongoClient(
+    f"mongodb+srv://{config.mongo_username}:{config.mongo_password}@cluster0.tucaz.mongodb.net/sound-visualizer?retryWrites=true&w=majority"
+)
+db = client.sound_visualizer
+
 
 @app.route('/', methods=['GET'])
 def get_form():
-    return '''
+    all_results = db.results.find().sort('_id', pymongo.DESCENDING).limit(25)
+    results_links = ''
+    for result in all_results:
+        result_url = '/result/' + result['result']
+        source = result['source']
+        source_url = ''
+        if 'youtube_url' in source and len(source['youtube_url']) > 0:
+            source_url = source['youtube_url']
+        results_links += (
+            f'<a href={source_url}> {source_url}</a> <a href={result_url}> result </a> <br />'
+        )
+    return f'''
        <!doctype html>
        <title>Upload new File</title>
        <h1>Upload new File</h1>
@@ -33,6 +50,7 @@ def get_form():
          <input type=text name=length_second value='-1'>
          <input type=submit value=Upload>
        </form>
+        {results_links}
        <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
        '''
 
@@ -41,13 +59,6 @@ def upload_file(filename, path):
     blob = g.bucket.blob(filename)
     blob.upload_from_filename(path, timeout=600)
     logger.info(f'{filename} uploaded')
-
-
-config = config_from_env()
-client = pymongo.MongoClient(
-    f"mongodb+srv://{config.mongo_username}:{config.mongo_password}@cluster0.tucaz.mongodb.net/sound-visualizer?retryWrites=true&w=majority"
-)
-db = client.sound_visualizer
 
 
 @app.route('/result/<result_id>', methods=['GET'])

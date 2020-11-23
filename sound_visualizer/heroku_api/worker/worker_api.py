@@ -83,7 +83,7 @@ def callback(message):
             db.status.insert_one({'request_id': request.result_id, 'stage': 'uploading'})
             bucket.blob(data['result_id'] + '.png').upload_from_file(bytes)
             db.status.insert_one({'request_id': request.result_id, 'stage': 'finished'})
-            db.results.insert_one({'source': request.dict(), 'result': request.result_id + '.png'})
+            db.results.insert_one({'source': request.dict(), 'result': request.result_id})
     except Exception as e:
         logger.error('error handling message', e)
     finally:
