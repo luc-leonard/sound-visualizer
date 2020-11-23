@@ -4,21 +4,32 @@ import logging
 import threading
 from uuid import uuid4
 
-from flask import Flask, redirect, request, send_file
-from google.cloud import pubsub_v1
-from google.cloud.storage.client import Client as CloudStorageClient
+import pymongo
+from flask import g, redirect, request, send_file
 from werkzeug.utils import secure_filename
 
+from sound_visualizer.heroku_api.web.app import MyApp
 from sound_visualizer.utils.logger import init_logger
 
-app = Flask(__name__)
+app = MyApp(__name__)
+
 logger = logging.getLogger(__name__)
-init_logger()
 
 
 @app.route('/', methods=['GET'])
 def get_form():
-    return '''
+    all_results = app.db.results.find().sort('_id', pymongo.DESCENDING).limit(25)
+    results_links = ''
+    for result in all_results:
+        result_url = '/result/' + result['result']
+        source = result['source']
+        source_url = ''
+        if 'youtube_url' in source and len(source['youtube_url']) > 0:
+            source_url = source['youtube_url']
+        results_links += (
+            f'<a href={source_url}> {source_url}</a> <a href={result_url}> result </a> <br />'
+        )
+    return f'''
        <!doctype html>
        <title>Upload new File</title>
        <h1>Upload new File</h1>
@@ -32,29 +43,27 @@ def get_form():
          <input type=text name=length_second value='-1'>
          <input type=submit value=Upload>
        </form>
+        {results_links}
        <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
        '''
 
 
-publisher = pubsub_v1.PublisherClient()
-
-storage_client = CloudStorageClient()
-bucket = storage_client.bucket('spectrogram-images')
-topic_path = publisher.topic_path('luc-leonard-sound-visualizer', 'my-topic')
-
-
 def upload_file(filename, path):
-    blob = bucket.blob(filename)
+    blob = g.bucket.blob(filename)
     blob.upload_from_filename(path, timeout=600)
     logger.info(f'{filename} uploaded')
 
 
 @app.route('/result/<result_id>', methods=['GET'])
 def get_image(result_id):
+    status = app.db.status.find_one({'request_id': result_id}, sort=[('_id', pymongo.DESCENDING)])
+    if status['stage'] != 'finished':
+        return status['stage']
+    logger.info(status)
     try:
         logger.info('GETTING IMAGE')
         data = io.BytesIO()
-        blob = bucket.blob(result_id + '.png')
+        blob = app.bucket.blob(result_id + '.png')
         blob.download_to_file(data)
         data.seek(0)
         return send_file(data, attachment_filename='_result.png', cache_timeout=0)
@@ -64,6 +73,7 @@ def get_image(result_id):
 
 @app.route('/', methods=['POST'])
 def post_image():
+    logger.info(app.publisher)
     data = request.form.to_dict()
     data['result_id'] = 'result_' + str(uuid4())
 
@@ -77,11 +87,13 @@ def post_image():
     def _thread(data_cpy):
         if len(data_cpy['youtube_url']) == 0:
             upload_file(sound_file.filename, filename)
-        publisher.publish(topic_path, json.dumps(data_cpy).encode("utf-8"))
+        app.publisher.publish(app.topic_path, json.dumps(data_cpy).encode("utf-8"))
 
     threading.Thread(target=_thread, args=(data,)).start()
+    app.db.status.insert_one({'request_id': data['result_id'], 'stage': 'requested'})
     return redirect('/result/' + data['result_id'])
 
 
 if __name__ == '__main__':
+    init_logger()
     app.run()
