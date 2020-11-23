@@ -2,11 +2,12 @@ import io
 import json
 import logging
 import random
-from typing import Dict
+from typing import Optional
 
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
-from PIL import ImageEnhance
+from PIL import Image, ImageEnhance
+from pydantic import BaseModel
 
 from sound_visualizer.app.input import SoundReader
 from sound_visualizer.app.input.converter import Mp3Converter
@@ -18,37 +19,55 @@ from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
 
-log_levels: Dict[str, str] = {'google.cloud.pubsub_v1.subscriber._protocol.leaser': 'INFO'}
+
+class SpectrogramRequestData(BaseModel):
+    # one, or the other
+    youtube_url: Optional[str]
+    filename: Optional[str]
+
+    start_second: Optional[int] = 0
+    length_second: Optional[int] = -1
+    overlap_factor: Optional[float] = 0.6
 
 
 def download_file(bucket_filename, local_filename):
     bucket.blob(bucket_filename).download_to_filename(local_filename)
 
 
-def callback(message):
+def generate_image(request: SpectrogramRequestData) -> Image:
     stopwatch = StopWatch()
+    if request.youtube_url is not None and len(request.youtube_url) == 0:
+        filename = '/tmp/' + str(random.randint(0, 255))
+        with stopwatch:
+            bucket.blob(request.filename).download_to_filename(filename)
+        logger.info(f"downloaded {request.filename} in {stopwatch.interval}s")
+    else:
+        filename = YoutubeDownloader().download(request.youtube_url)
+    with stopwatch:
+        wav_filename = Mp3Converter(filename=filename).convert()
+    logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
+    sound_reader = SoundReader(
+        filename=wav_filename,
+        start_second=request.start_second,
+        length_second=request.length_second,
+    )
+    spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=request.overlap_factor)
+    spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
+    return ImageEnhance.Contrast(
+        GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
+            spectral_analysis.fft_data
+        )
+    ).enhance(10.0)
+
+
+def callback(message):
+
     try:
         data = json.loads(message.data)
-        logger.info(data)
-        if len(data['youtube_url']) == 0:
-            filename = '/tmp/' + str(random.randint(0, 255))
-            with stopwatch:
-                bucket.blob(data['filename']).download_to_filename(filename)
-            logger.info(f"downloaded {data['filename']} in {stopwatch.interval}s")
-            del data['filename']
-        else:
-            filename = YoutubeDownloader().download(data['youtube_url'])
-        with stopwatch:
-            wav_filename = Mp3Converter(filename=filename, **data).convert()
-        logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
-        sound_reader = SoundReader(filename=wav_filename, **data)
-        spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
-        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
-        image = ImageEnhance.Contrast(
-            GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
-                spectral_analysis.fft_data
-            )
-        ).enhance(10.0)
+        request = SpectrogramRequestData(**data)
+        logger.info(f'request = {request}')
+
+        image = generate_image(request)
         with io.BytesIO() as bytes:
             image.save(bytes, format='png')
             bytes.seek(0)
@@ -61,8 +80,7 @@ def callback(message):
 
 if __name__ == '__main__':
     init_logger()
-    for (logger_name, log_level) in log_levels.items():
-        logging.getLogger(logger_name).setLevel(log_level)
+
     storage_client = CloudStorageClient()
     bucket = storage_client.bucket('spectrogram-images')
 
@@ -71,8 +89,6 @@ if __name__ == '__main__':
     streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
     with subscriber:
         try:
-            # When `timeout` is not set, result() will block indefinitely,
-            # unless an exception is encountered first.
             streaming_pull_future.result()
         except TimeoutError as e:
             streaming_pull_future.cancel()
