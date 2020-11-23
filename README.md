@@ -39,7 +39,10 @@ run ```make start_webserver``` and go to http://localhost:5000
 
 You can use ```docker run -p 5000:80 lucleonard/sound-visualizer``` and go to http://localhost:5000
 
-The web application is also deployed at https://luc-leonard-sound-visualizer.herokuapp.com/
+#### heroku
+The application can be deployed on heroku. It uses Google Cloud Engine to communicate between the web and the worker layer
+
+It is also deployed at https://luc-leonard-sound-visualizer.herokuapp.com/
 
 ## Examples
 ![example_1](examples/example_greyscale_1.png)

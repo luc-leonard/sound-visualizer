@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-import sound_visualizer.api.main_docker
+import sound_visualizer.docker_image_api.main_docker
 
 
 @pytest.fixture()
 def client():
-    with sound_visualizer.api.main_docker.app.test_client() as client:
+    with sound_visualizer.docker_image_api.main_docker.app.test_client() as client:
         yield client
 
 
