@@ -6,12 +6,14 @@ from typing import Dict
 
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
+from PIL import ImageEnhance
 
 from sound_visualizer.app.input import SoundReader
 from sound_visualizer.app.input.converter import Mp3Converter
 from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
+from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
@@ -24,28 +26,37 @@ def download_file(bucket_filename, local_filename):
 
 
 def callback(message):
+    stopwatch = StopWatch()
     try:
         data = json.loads(message.data)
         logger.info(data)
         if len(data['youtube_url']) == 0:
             filename = '/tmp/' + str(random.randint(0, 255))
-            bucket.blob(data['filename']).download_to_filename(filename)
+            with stopwatch:
+                bucket.blob(data['filename']).download_to_filename(filename)
+            logger.info(f"downloaded {data['filename']} in {stopwatch.interval}s")
             del data['filename']
         else:
             filename = YoutubeDownloader().download(data['youtube_url'])
-        filename = Mp3Converter(filename=filename, **data).convert()
-        sound_reader = SoundReader(filename=filename, **data)
+        with stopwatch:
+            wav_filename = Mp3Converter(filename=filename, **data).convert()
+        logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
+        sound_reader = SoundReader(filename=wav_filename, **data)
         spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=0.6)
         spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
-        image = GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
-            spectral_analysis.fft_data
-        )
+        image = ImageEnhance.Contrast(
+            GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
+                spectral_analysis.fft_data
+            )
+        ).enhance(10.0)
         with io.BytesIO() as bytes:
             image.save(bytes, format='png')
             bytes.seek(0)
             bucket.blob(data['result_id'] + '.png').upload_from_file(bytes)
     except Exception as e:
         logger.error('error handling message', e)
+    finally:
+        message.ack()
 
 
 if __name__ == '__main__':
