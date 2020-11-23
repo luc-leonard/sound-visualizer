@@ -4,9 +4,11 @@ import logging
 import threading
 from uuid import uuid4
 
+import pymongo
 from flask import g, redirect, request, send_file
 from werkzeug.utils import secure_filename
 
+from sound_visualizer.heroku_api.config import config_from_env
 from sound_visualizer.heroku_api.web.app import MyApp
 from sound_visualizer.utils.logger import init_logger
 
@@ -41,8 +43,19 @@ def upload_file(filename, path):
     logger.info(f'{filename} uploaded')
 
 
+config = config_from_env()
+client = pymongo.MongoClient(
+    f"mongodb+srv://{config.mongo_username}:{config.mongo_password}@cluster0.tucaz.mongodb.net/sound-visualizer?retryWrites=true&w=majority"
+)
+db = client.sound_visualizer
+
+
 @app.route('/result/<result_id>', methods=['GET'])
 def get_image(result_id):
+    status = db.status.find_one({'request_id': result_id}, sort=[('_id', pymongo.DESCENDING)])
+    if status['stage'] != 'finished':
+        return status['stage']
+    logger.info(status)
     try:
         logger.info('GETTING IMAGE')
         data = io.BytesIO()
@@ -73,6 +86,7 @@ def post_image():
         app.publisher.publish(app.topic_path, json.dumps(data_cpy).encode("utf-8"))
 
     threading.Thread(target=_thread, args=(data,)).start()
+    db.status.insert_one({'request_id': data['result_id'], 'stage': 'requested'})
     return redirect('/result/' + data['result_id'])
 
 

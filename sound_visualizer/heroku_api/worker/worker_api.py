@@ -4,6 +4,7 @@ import logging
 import random
 from typing import Optional
 
+import pymongo
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
 from PIL import Image, ImageEnhance
@@ -14,6 +15,7 @@ from sound_visualizer.app.input.converter import Mp3Converter
 from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
+from sound_visualizer.heroku_api.config import config_from_env
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
 
@@ -29,6 +31,8 @@ class SpectrogramRequestData(BaseModel):
     length_second: Optional[int] = -1
     overlap_factor: Optional[float] = 0.6
 
+    result_id: str
+
 
 def download_file(bucket_filename, local_filename):
     bucket.blob(bucket_filename).download_to_filename(local_filename)
@@ -36,6 +40,7 @@ def download_file(bucket_filename, local_filename):
 
 def generate_image(request: SpectrogramRequestData) -> Image:
     stopwatch = StopWatch()
+    db.status.insert_one({'request_id': request.result_id, 'stage': 'downloading'})
     if request.youtube_url is not None and len(request.youtube_url) == 0:
         filename = '/tmp/' + str(random.randint(0, 255))
         with stopwatch:
@@ -44,7 +49,9 @@ def generate_image(request: SpectrogramRequestData) -> Image:
     else:
         filename = YoutubeDownloader().download(request.youtube_url)
     with stopwatch:
+        db.status.insert_one({'request_id': request.result_id, 'stage': 'converting'})
         wav_filename = Mp3Converter(filename=filename).convert()
+    db.status.insert_one({'request_id': request.result_id, 'stage': 'analysing...'})
     logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
     sound_reader = SoundReader(
         filename=wav_filename,
@@ -53,6 +60,9 @@ def generate_image(request: SpectrogramRequestData) -> Image:
     )
     spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=request.overlap_factor)
     spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
+    db.status.insert_one(
+        {'request_id': request.result_id, 'stage': 'generating image... almost done...'}
+    )
     return ImageEnhance.Contrast(
         GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
             spectral_analysis.fft_data
@@ -61,22 +71,30 @@ def generate_image(request: SpectrogramRequestData) -> Image:
 
 
 def callback(message):
-
     try:
         data = json.loads(message.data)
         request = SpectrogramRequestData(**data)
         logger.info(f'request = {request}')
-
+        db.status.insert_one({'request_id': request.result_id, 'stage': 'beginning'})
         image = generate_image(request)
         with io.BytesIO() as bytes:
             image.save(bytes, format='png')
             bytes.seek(0)
+            db.status.insert_one({'request_id': request.result_id, 'stage': 'uploading'})
             bucket.blob(data['result_id'] + '.png').upload_from_file(bytes)
+            db.status.insert_one({'request_id': request.result_id, 'stage': 'finished'})
+            db.results.insert_one({'source': request.dict(), 'result': request.result_id + '.png'})
     except Exception as e:
         logger.error('error handling message', e)
     finally:
         message.ack()
 
+
+config = config_from_env()
+client = pymongo.MongoClient(
+    f"mongodb+srv://{config.mongo_username}:{config.mongo_password}@cluster0.tucaz.mongodb.net/sound-visualizer?retryWrites=true&w=majority"
+)
+db = client.sound_visualizer
 
 if __name__ == '__main__':
     init_logger()
