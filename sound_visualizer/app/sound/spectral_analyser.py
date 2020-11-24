@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -82,23 +83,29 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
         strides=(samples.strides[0] * hopSize, samples.strides[0]),
     )
     # todo: either make this configurable, or find an heuristic to get the optimal value
-    nb_chunks = 100
+    nb_chunks = 10
     logger.info(
-        f"the fft will be computed on {nb_chunks} chunks. size in memory {convert_size(np_get_real_size(frames))}"
+        f"the fft will be computed on {nb_chunks} chunks. size in memory {convert_size(np_get_real_size(frames))} "
+        f"(would use {convert_size(frames.nbytes)} without strides"
     )
     # we split this array in chunks
     chunked_frames = np.array_split(frames, nb_chunks)
     window_fn = np.hamming(frame_size)
 
-    full_fft_data = None
+    full_fft_data: Optional[np.ndarray] = None
     for frame in chunked_frames:
         # we apply a 'window' (in the mathematical sense) function. its purpose is to make sure our lines are smooth
         # since it alter a frame, and frames are view that overlap, we need to copy data first
         local_frame = frame.copy()
+        logger.info(f'chunk size: {convert_size(np_get_real_size(local_frame))}')
         local_frame *= window_fn
         frame_fft_data = 10 * np.log(10) * np.abs(np.fft.rfft(local_frame))
         if full_fft_data is not None:
             full_fft_data = np.vstack([full_fft_data, frame_fft_data])
         else:
             full_fft_data = frame_fft_data
+    assert full_fft_data is not None
+    logger.info(
+        f' fulll fft data. shape: {full_fft_data.shape}, size: {convert_size(full_fft_data.nbytes)}'
+    )
     return full_fft_data
