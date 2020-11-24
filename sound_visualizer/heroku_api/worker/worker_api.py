@@ -2,13 +2,11 @@ import io
 import json
 import logging
 import random
-from typing import Optional
 
 import pymongo
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
 from PIL import Image, ImageEnhance
-from pydantic import BaseModel
 
 from sound_visualizer.app.input import SoundReader
 from sound_visualizer.app.input.converter import Mp3Converter
@@ -16,23 +14,11 @@ from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.heroku_api.config import config_from_env
+from sound_visualizer.heroku_api.models.spectrogram_request_data import SpectrogramRequestData
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
-
-
-class SpectrogramRequestData(BaseModel):
-    # one, or the other
-    youtube_url: Optional[str]
-    filename: Optional[str]
-
-    start_second: Optional[int] = 0
-    length_second: Optional[int] = -1
-    frame_size: Optional[int] = 2 ** 15
-    overlap_factor: Optional[float] = 0.95
-
-    result_id: str
 
 
 def download_file(bucket_filename, local_filename):
@@ -60,7 +46,7 @@ def generate_image(request: SpectrogramRequestData) -> Image:
         length_second=request.length_second,
     )
     spectral_analyser = SpectralAnalyzer(
-        frame_size=request.frame_size, overlap_factor=request.overlap_factor
+        frame_size=2 ** request.frame_size_power, overlap_factor=request.overlap_factor
     )
     spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
     db.status.insert_one(
