@@ -1,6 +1,10 @@
+import logging
+
 import numpy as np
 from pydantic import BaseModel
 from scipy.io import wavfile
+
+logger = logging.getLogger(__name__)
 
 
 class Sound(BaseModel):
@@ -22,7 +26,7 @@ class SoundReader(BaseModel):
 
     def get_data(self) -> Sound:
         sample_rate, data = wavfile.read(self.filename)
-        # we only handle one channel
+        logger.info(f'{self.filename} read in memory. sample_rate = {sample_rate}')
 
         if len(data.shape) > 1:
             data = data[:, 0]

@@ -63,11 +63,13 @@ def generate_image(request: SpectrogramRequestData) -> Image:
     db.status.insert_one(
         {'request_id': request.result_id, 'stage': 'generating image... almost done...'}
     )
-    return ImageEnhance.Contrast(
+    logger.info(f'generated fft data {spectral_analysis}')
+    image = ImageEnhance.Contrast(
         GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
             spectral_analysis.fft_data
         )
     ).enhance(10.0)
+    return image
 
 
 def callback(message):
