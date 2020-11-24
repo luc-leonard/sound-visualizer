@@ -8,6 +8,7 @@ import pymongo
 from flask import g, redirect, request, send_file
 from werkzeug.utils import secure_filename
 
+from sound_visualizer.heroku_api.models.spectrogram_request_data import SpectrogramRequestData
 from sound_visualizer.heroku_api.web.app import MyApp
 from sound_visualizer.utils.logger import init_logger
 
@@ -26,9 +27,9 @@ def get_form():
         source_url = ''
         if 'youtube_url' in source and len(source['youtube_url']) > 0:
             source_url = source['youtube_url']
-        results_links += (
-            f'<a href={source_url}> {source_url}</a> <a href={result_url}> result </a> <br />'
-        )
+        del source['youtube_url']
+        del source['result_id']
+        results_links += f'<a href={source_url}> {source_url}</a> <a href={result_url}> result </a> parameters = {source} <br />'
     return f'''
        <!doctype html>
        <title>Upload new File</title>
@@ -41,8 +42,14 @@ def get_form():
          <input type=text name=start_second value='0'>
          <label>length (s)</label>
          <input type=text name=length_second value='-1'>
+        <br />
+        <label> frame size (between 14 and 17) </label>
+         2^<input type=text name=frame_size_power value=14>
+        <label> overlap_factor (between 0.1 and 0.9) </label>
+        <input type=text name=overlap_factor value=0.8>
          <input type=submit value=Upload>
        </form>
+        <br />
         {results_links}
        <a href='https://github.com/luc-leonard/sound-visualizer/'>github</a>
        '''
@@ -73,25 +80,29 @@ def get_image(result_id):
 
 @app.route('/', methods=['POST'])
 def post_image():
-    logger.info(app.publisher)
-    data = request.form.to_dict()
-    data['result_id'] = 'result_' + str(uuid4())
+    try:
+        logger.info(app.publisher)
+        data = request.form.to_dict()
+        data['result_id'] = 'result_' + str(uuid4())
+        spectrogram_request = SpectrogramRequestData(**data)
+        logger.info(spectrogram_request)
+        if len(request.form['youtube_url']) == 0:
+            # upload to object storage
+            sound_file = request.files['sound_file']
+            filename = '/tmp/' + secure_filename(sound_file.filename)
+            sound_file.save(filename)
+            data['filename'] = sound_file.filename
 
-    if len(request.form['youtube_url']) == 0:
-        # upload to object storage
-        sound_file = request.files['sound_file']
-        filename = '/tmp/' + secure_filename(sound_file.filename)
-        sound_file.save(filename)
-        data['filename'] = sound_file.filename
+        def _thread(data_cpy):
+            if len(data_cpy['youtube_url']) == 0:
+                upload_file(sound_file.filename, filename)
+            app.publisher.publish(app.topic_path, json.dumps(data_cpy).encode("utf-8"))
 
-    def _thread(data_cpy):
-        if len(data_cpy['youtube_url']) == 0:
-            upload_file(sound_file.filename, filename)
-        app.publisher.publish(app.topic_path, json.dumps(data_cpy).encode("utf-8"))
-
-    threading.Thread(target=_thread, args=(data,)).start()
-    app.db.status.insert_one({'request_id': data['result_id'], 'stage': 'requested'})
-    return redirect('/result/' + data['result_id'])
+        threading.Thread(target=_thread, args=(data,)).start()
+        app.db.status.insert_one({'request_id': data['result_id'], 'stage': 'requested'})
+        return redirect('/result/' + data['result_id'])
+    except Exception as e:
+        return str(e), 400
 
 
 if __name__ == '__main__':
