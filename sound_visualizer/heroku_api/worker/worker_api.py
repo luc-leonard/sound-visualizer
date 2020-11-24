@@ -29,7 +29,8 @@ class SpectrogramRequestData(BaseModel):
 
     start_second: Optional[int] = 0
     length_second: Optional[int] = -1
-    overlap_factor: Optional[float] = 0.6
+    frame_size: Optional[int] = 2 ** 15
+    overlap_factor: Optional[float] = 0.95
 
     result_id: str
 
@@ -58,7 +59,9 @@ def generate_image(request: SpectrogramRequestData) -> Image:
         start_second=request.start_second,
         length_second=request.length_second,
     )
-    spectral_analyser = SpectralAnalyzer(frame_size=4096, overlap_factor=request.overlap_factor)
+    spectral_analyser = SpectralAnalyzer(
+        frame_size=request.frame_size, overlap_factor=request.overlap_factor
+    )
     spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
     db.status.insert_one(
         {'request_id': request.result_id, 'stage': 'generating image... almost done...'}
@@ -86,10 +89,9 @@ def callback(message):
             bucket.blob(data['result_id'] + '.png').upload_from_file(bytes)
             db.status.insert_one({'request_id': request.result_id, 'stage': 'finished'})
             db.results.insert_one({'source': request.dict(), 'result': request.result_id})
+        message.ack()
     except Exception as e:
         logger.error('error handling message', e)
-    finally:
-        message.ack()
 
 
 config = config_from_env()
