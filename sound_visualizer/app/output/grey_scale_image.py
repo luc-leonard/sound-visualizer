@@ -21,5 +21,7 @@ class GreyScaleImageGenerator(BaseModel):
         )
 
         return ImageOps.expand(
-            Image.fromarray(image_data), border=self.border_width, fill=self.border_color
+            Image.fromarray(image_data).convert('RGB'),
+            border=self.border_width,
+            fill=self.border_color,
         )
