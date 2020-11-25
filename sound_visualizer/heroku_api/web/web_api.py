@@ -63,17 +63,25 @@ def upload_file(filename, path):
 
 @app.route('/result/<result_id>', methods=['GET'])
 def get_image(result_id):
-    status = app.db.status.find_one({'request_id': result_id}, sort=[('_id', pymongo.DESCENDING)])
-    if status['stage'] != 'finished':
-        return status['stage']
-    logger.info(status)
     try:
-        logger.info('GETTING IMAGE')
-        data = io.BytesIO()
-        blob = app.bucket.blob(result_id + '.png')
-        blob.download_to_file(data)
-        data.seek(0)
-        return send_file(data, attachment_filename='_result.png', cache_timeout=0)
+        status = app.db.status.find_one(
+            {'request_id': result_id}, sort=[('_id', pymongo.DESCENDING)]
+        )
+        if status['stage'] != 'finished':
+            return status['stage']
+        logger.info(status)
+        if app.cache.is_result_in_cache(result_id):
+            with app.cache.get_result_in_cache(result_id) as result:
+                return send_file(result, attachment_filename='_result.png', cache_timeout=0)
+        else:
+            logger.info('GETTING IMAGE FROM BUCKET')
+            data = io.BytesIO()
+            blob = app.bucket.blob(result_id + '.png')
+            blob.download_to_file(data)
+            data.seek(0)
+            app.cache.put_result_in_cache(result_id, data)
+            data.seek(0)
+            return send_file(data, attachment_filename='_result.png', cache_timeout=0)
     except Exception as e:
         return f'Please try again later {e}'
 

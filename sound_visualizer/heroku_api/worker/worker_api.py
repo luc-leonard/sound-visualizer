@@ -15,7 +15,7 @@ from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.heroku_api.config import config_from_env
-from sound_visualizer.heroku_api.models.spectrogram_request_data import SpectrogramRequestData
+from sound_visualizer.models.spectrogram_request_data import SpectrogramRequestData
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
 
