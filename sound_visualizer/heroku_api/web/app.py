@@ -3,6 +3,7 @@ from flask import Flask
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
 
+from sound_visualizer.app.cache import Cache
 from sound_visualizer.heroku_api.config import config_from_env
 
 
@@ -26,6 +27,7 @@ config = config_from_env()
 
 
 class MyApp(Flask):
+    cache = Cache(cache_folder='/tmp/sound_visualizer')
     publisher = get_publisher_client()
     storage_client = get_storage_client()
     bucket = get_bucket(storage_client)
