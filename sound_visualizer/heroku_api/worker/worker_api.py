@@ -7,7 +7,7 @@ import numpy as np
 import pymongo
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 from sound_visualizer.app.input import SoundReader
 from sound_visualizer.app.input.converter import Mp3Converter
@@ -54,17 +54,25 @@ def generate_image(request: SpectrogramRequestData) -> Image:
         {'request_id': request.result_id, 'stage': 'generating image... almost done...'}
     )
     logger.info(f'generated fft data {spectral_analysis}')
-    image = GreyScaleImageGenerator(border_width=1, border_color='red').create_image(
+    image = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
         spectral_analysis.fft_data
     )
+    ImageFont.load_default()
+    draw = ImageDraw.Draw(image)
     for i in range(0, int(np.floor(spectral_analysis.time_domain[-1])), 1):
         second_idx = spectral_analysis.time_domain.searchsorted(i)
-        for j in range(0, 15):
-            image.putpixel((j, second_idx), 0xFFFFFF)
+        draw.line([(0, second_idx), (15, second_idx)], fill='red', width=1)
+        if i % 5 == 0:
+            draw.text(xy=(0, second_idx + 16), text=f'{i}', fill='red')
+
+    for j in [10, 100, 1000, 10000]:
+        frequency_idx = spectral_analysis.frequency_domain.searchsorted(j)
+        draw.line(
+            [(frequency_idx + 15, 0), (frequency_idx + 15, image.size[1])], fill='red', width=1
+        )
+
     image = ImageEnhance.Contrast(image).enhance(10.0)
-    # image = image.resize((image.size[0] * 5, image.size[1] * 5), Image.ANTIALIAS)
-    # image = ImageEnhance.Sharpness(image).enhance(5.0)
-    return image
+    return image.rotate(90, expand=True)
 
 
 def callback(message):
