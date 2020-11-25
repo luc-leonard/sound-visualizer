@@ -3,6 +3,7 @@ import json
 import logging
 import random
 
+import numpy as np
 import pymongo
 from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
@@ -48,16 +49,21 @@ def generate_image(request: SpectrogramRequestData) -> Image:
     spectral_analyser = SpectralAnalyzer(
         frame_size=2 ** request.frame_size_power, overlap_factor=request.overlap_factor
     )
-    spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
+    spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(5000)
     db.status.insert_one(
         {'request_id': request.result_id, 'stage': 'generating image... almost done...'}
     )
     logger.info(f'generated fft data {spectral_analysis}')
-    image = ImageEnhance.Contrast(
-        GreyScaleImageGenerator(border_width=10, border_color='red').create_image(
-            spectral_analysis.fft_data
-        )
-    ).enhance(10.0)
+    image = GreyScaleImageGenerator(border_width=1, border_color='red').create_image(
+        spectral_analysis.fft_data
+    )
+    for i in range(0, int(np.floor(spectral_analysis.time_domain[-1])), 1):
+        second_idx = spectral_analysis.time_domain.searchsorted(i)
+        for j in range(0, 15):
+            image.putpixel((j, second_idx), 0xFFFFFF)
+    image = ImageEnhance.Contrast(image).enhance(10.0)
+    # image = image.resize((image.size[0] * 5, image.size[1] * 5), Image.ANTIALIAS)
+    # image = ImageEnhance.Sharpness(image).enhance(5.0)
     return image
 
 
@@ -78,6 +84,7 @@ def callback(message):
         message.ack()
     except Exception as e:
         logger.error('error handling message', e)
+        message.ack()
 
 
 config = config_from_env()

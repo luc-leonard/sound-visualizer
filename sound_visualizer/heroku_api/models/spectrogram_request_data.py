@@ -11,5 +11,5 @@ class SpectrogramRequestData(BaseModel):
     start_second: Optional[int] = 0
     length_second: Optional[int] = -1
     overlap_factor: Optional[float] = Field(ge=0.0, le=0.95, default=0.8)
-    frame_size_power: int = Field(ge=12, le=16, default=14)
+    frame_size_power: int = Field(ge=12, le=18, default=14)
     result_id: str
