@@ -9,7 +9,7 @@ _LOGGING_CONF_FILE = 'logging_conf.json'
 def init_logger():
     root = logging.getLogger()
     root.setLevel(level=logging.DEBUG)
-    handler = logging.StreamHandler(sys.stderr)
+    handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)

@@ -69,10 +69,10 @@ def get_image(result_id):
         )
         if status['stage'] != 'finished':
             return status['stage']
-        logger.info(status)
+        logger.info(f'status = {status}')
         if app.cache.is_result_in_cache(result_id):
-            with app.cache.get_result_in_cache(result_id) as result:
-                return send_file(result, attachment_filename='_result.png', cache_timeout=0)
+            result = app.cache.get_result_in_cache(result_id)
+            return send_file(result, attachment_filename='_result.png', cache_timeout=0)
         else:
             logger.info('GETTING IMAGE FROM BUCKET')
             data = io.BytesIO()
@@ -113,6 +113,7 @@ def post_image():
         return str(e), 400
 
 
+# outside of main for gunicorn
+init_logger()
 if __name__ == '__main__':
-    init_logger()
     app.run()
