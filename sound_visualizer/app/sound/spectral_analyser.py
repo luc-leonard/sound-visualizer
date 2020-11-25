@@ -70,9 +70,11 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
     """
     from numpy.lib import stride_tricks
 
-    hopSize = int(frame_size - np.floor(overlap_factor * frame_size))
+    # hop_size = 20
+    hop_size = int(frame_size - np.floor(overlap_factor * frame_size))
+    logger.info(f'hop zise = {hop_size}')
     samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
-    cols = np.ceil((len(samples) - frame_size) / float(hopSize)) + 1
+    cols = np.ceil((len(samples) - frame_size) / float(hop_size)) + 1
     samples = np.append(samples, np.zeros(frame_size))
 
     # first, we create overlapping windows (in the sql sense) with as_strided.
@@ -80,7 +82,7 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
     frames = stride_tricks.as_strided(
         samples,
         shape=(int(cols), frame_size),
-        strides=(samples.strides[0] * hopSize, samples.strides[0]),
+        strides=(samples.strides[0] * hop_size, samples.strides[0]),
     )
     # todo: either make this configurable, or find an heuristic to get the optimal value
     nb_chunks = 10
