@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 from pydantic import BaseModel, Field
 
-from sound_visualizer.app.input import SoundReader
+from sound_visualizer.app.sound.sound_reader import SoundReader
 from sound_visualizer.utils import convert_size
 from sound_visualizer.utils.size import np_get_real_size
 

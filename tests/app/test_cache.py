@@ -18,7 +18,7 @@ def result_id():
 
 
 def test_cache(cache, result_id):
-    assert cache.is_result_in_cache(result_id) is False
-    cache.put_result_in_cache(result_id, io.BytesIO(b'FOFOFOFO'))
-    assert cache.is_result_in_cache(result_id) is True
-    assert cache.get_result_in_cache(result_id).read() == b'FOFOFOFO'
+    assert cache.is_data_in_cache(result_id) is False
+    cache.put_data_in_cache(result_id, io.BytesIO(b'FOFOFOFO'))
+    assert cache.is_data_in_cache(result_id) is True
+    assert cache.get_data_in_cache(result_id).read() == b'FOFOFOFO'

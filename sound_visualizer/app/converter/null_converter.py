@@ -1,4 +1,4 @@
-from sound_visualizer.app.input.converter.converter import Converter
+from sound_visualizer.app.converter.converter import Converter
 
 
 class NullConverter(Converter):

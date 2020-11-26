@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 class GreyScaleImageGenerator(BaseModel):
     border_width: int
     border_color: str
+    # frequencies_marks: bool
+    # time_marks: bool
 
     def create_image(self, fft_data: np.ndarray) -> Image:
         image_data = np.floor((fft_data / (fft_data.max() / 255))).astype('uint8')

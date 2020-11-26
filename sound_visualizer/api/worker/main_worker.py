@@ -9,13 +9,13 @@ from google.cloud import pubsub_v1
 from google.cloud.storage.client import Client as CloudStorageClient
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
-from sound_visualizer.app.input import SoundReader
-from sound_visualizer.app.input.converter import Mp3Converter
-from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
-from sound_visualizer.app.output.grey_scale_image import GreyScaleImageGenerator
+from sound_visualizer.api.config import config_from_env
+from sound_visualizer.app.converter import Mp3Converter
+from sound_visualizer.app.downloader.youtube import YoutubeDownloader
+from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
-from sound_visualizer.heroku_api.config import config_from_env
-from sound_visualizer.heroku_api.models.spectrogram_request_data import SpectrogramRequestData
+from sound_visualizer.app.sound.sound_reader import SoundReader
+from sound_visualizer.models.spectrogram_request_data import SpectrogramRequestData
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
 
@@ -96,19 +96,19 @@ def callback(message):
 
 
 config = config_from_env()
-client = pymongo.MongoClient(
-    f"mongodb+srv://{config.mongo_username}:{config.mongo_password}@cluster0.tucaz.mongodb.net/sound-visualizer?retryWrites=true&w=majority"
-)
+client = pymongo.MongoClient(config.mongo_connection_string)
 db = client.sound_visualizer
 
 if __name__ == '__main__':
     init_logger()
 
     storage_client = CloudStorageClient()
-    bucket = storage_client.bucket('spectrogram-images')
+    bucket = storage_client.bucket(config.google_storage_bucket_name)
 
     subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path('luc-leonard-sound-visualizer', 'my-sub')
+    subscription_path = subscriber.subscription_path(
+        config.google_application_project_name, 'my-sub'
+    )
     streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback)
     with subscriber:
         try:
