@@ -39,12 +39,11 @@ RUN poetry update install --no-dev
 
 FROM python:3.9-slim as prod
 COPY --from=builder "/opt/pysetup" "/opt/pysetup"
-RUN apt-get update && apt-get install -y ffmpeg
+COPY vendor/ffmpeg /bin/
 COPY . /app/
 WORKDIR /app/
 ENV _IN_DOCKER=1
 ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
-EXPOSE 80
-CMD ["python", "sound_visualizer/api/worker/main_worker.py"]
+ENTRYPOINT ["python", "sound_visualizer/api/worker/main_worker.py"]
