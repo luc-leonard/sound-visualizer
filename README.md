@@ -18,7 +18,26 @@ You can also make your own image by using
 ```$ make docker```
 
 ## Usage
-### as a CLI tool
+### as a web server
+
+To deploy this app yourself, you will need a Google Cloud Engine account.
+Specific environment variable must be set. See [this file](deployment_template/config.env)
+
+The application has 2 layers: web and worker that communicates using Google PubSub
+
+#### directly
+run ```make web``` and ```make worker```  and go to http://localhost:5000
+#### with docker
+
+You can use this [docker-compose file](docker/docker-compose.yml). If the images are not on dockerhub you can
+build them with ```make docker```
+
+#### heroku
+The application can be deployed on heroku. Procfile is provided
+
+If you want to try it, it is also deployed at https://luc-leonard-sound-visualizer.herokuapp.com/
+
+### as a CLI tool (NOT ACTIVELY MAINTENED)
 #### the arguments
 * --filename <filename>: the wav to analyse
 * --frame_size: the size of the frames that will be used for the FFT transform. It should be a power of 2 such as 1024 or 2048
@@ -30,23 +49,14 @@ You can also make your own image by using
 * --high-cut: this will ignore higher frequencies when displaying data
 * --output-folder: where to output the images
 
-```$ poetry run sound_visualizer_main.py <args>```
+```$ poetry run python sound_visualizer/cli/main.py <args>```
 
-### as a web server
-#### directly
-run ```make start_webserver``` and go to http://localhost:5000
-#### with docker
-
-You can use ```docker run -p 5000:80 lucleonard/sound-visualizer``` and go to http://localhost:5000
-
-#### heroku
-The application can be deployed on heroku. It uses Google Cloud Engine to communicate between the web and the worker layer
-
-It is also deployed at https://luc-leonard-sound-visualizer.herokuapp.com/
 
 ## Examples
-![example_1](examples/example_greyscale_1.png)
-![example_2](examples/example_greyscale_2.png)
+![example_1](examples/example_new.png)
+
+
+![example_2](examples/example_new_2.png)
 
 ## Contributing
 For now, it is just a personal repository :) feel free to fork it anyway.

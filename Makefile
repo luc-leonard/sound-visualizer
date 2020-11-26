@@ -34,3 +34,8 @@ publish:
 	docker push lucleonard/sound-visualizer-web:$(VERSION)
 	docker push lucleonard/sound-visualizer-web:latest
 
+run_web:
+	gunicorn sound_visualizer.api.web.main_web:app --log-file -
+
+run_worker:
+	python sound_visualizer/api/worker/main_worker.py
