@@ -6,7 +6,6 @@ import random
 import numpy as np
 import pymongo
 from google.cloud import pubsub_v1
-from google.cloud.storage.client import Client as CloudStorageClient
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 from sound_visualizer.api.config import config_from_env
@@ -15,6 +14,7 @@ from sound_visualizer.app.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
 from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.app.sound.sound_reader import SoundReader
+from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.models.spectrogram_request_data import SpectrogramRequestData
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def download_file(bucket_filename, local_filename):
-    bucket.blob(bucket_filename).download_to_filename(local_filename)
+    with open(local_filename, 'wb') as f:
+        storage.download_to(bucket_filename, f)
 
 
 def generate_image(request: SpectrogramRequestData) -> Image:
@@ -32,7 +33,7 @@ def generate_image(request: SpectrogramRequestData) -> Image:
     if request.youtube_url is not None and len(request.youtube_url) == 0:
         filename = '/tmp/' + str(random.randint(0, 255))
         with stopwatch:
-            bucket.blob(request.filename).download_to_filename(filename)
+            download_file(request.filename, filename)
         logger.info(f"downloaded {request.filename} in {stopwatch.interval}s")
     else:
         filename = YoutubeDownloader().download(request.youtube_url)
@@ -86,7 +87,7 @@ def callback(message):
             image.save(bytes, format='png')
             bytes.seek(0)
             db.status.insert_one({'request_id': request.result_id, 'stage': 'uploading'})
-            bucket.blob(data['result_id'] + '.png').upload_from_file(bytes)
+            storage.upload_from(data['result_id'] + '.png', bytes)
             db.status.insert_one({'request_id': request.result_id, 'stage': 'finished'})
             db.results.insert_one({'source': request.dict(), 'result': request.result_id})
         message.ack()
@@ -102,9 +103,7 @@ db = client.sound_visualizer
 if __name__ == '__main__':
     init_logger()
 
-    storage_client = CloudStorageClient()
-    bucket = storage_client.bucket(config.google_storage_bucket_name)
-
+    storage = GoogleCloudStorage(config.google_storage_bucket_name)
     subscriber = pubsub_v1.SubscriberClient()
     subscription_path = subscriber.subscription_path(
         config.google_application_project_name, 'my-sub'

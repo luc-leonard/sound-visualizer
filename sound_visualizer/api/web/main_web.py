@@ -71,13 +71,12 @@ def get_image(result_id):
             return status['stage']
         logger.info(f'status = {status}')
         if app.cache.is_data_in_cache(result_id):
-            result = app.cache.get_data_in_cache(result_id)
-            return send_file(result, attachment_filename='_result.png', cache_timeout=0)
+            cached_data = app.cache.get_data_in_cache(result_id)
+            return send_file(cached_data, attachment_filename='_result.png', cache_timeout=0)
         else:
             logger.info('GETTING IMAGE FROM BUCKET')
             data = io.BytesIO()
-            blob = app.bucket.blob(result_id + '.png')
-            blob.download_to_file(data)
+            app.storage.download_to(result_id + '.png', data)
             data.seek(0)
             app.cache.put_data_in_cache(result_id, data)
             data.seek(0)
