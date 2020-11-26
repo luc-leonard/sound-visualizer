@@ -16,17 +16,22 @@ logger = logging.getLogger(__name__)
 
 @app.route('/', methods=['GET'])
 def get_form():
-    all_results = app.db.results.find().sort('_id', pymongo.DESCENDING).limit(25)
+    all_results = [
+        SpectralAnalysisFlow(**data)
+        for data in app.orm.find({'status': 'finished'}).sort('_id', pymongo.DESCENDING).limit(25)
+    ]
     results_links = ''
+    result: SpectralAnalysisFlow
     for result in all_results:
-        result_url = '/result/' + result['result']
-        source = result['source']
+        result_url = '/result/' + result.id
+        source = result.parameters
         source_url = ''
-        if 'youtube_url' in source and len(source['youtube_url']) > 0:
-            source_url = source['youtube_url']
-        del source['youtube_url']
-        del source['result_id']
-        results_links += f'<a href={source_url}> {source_url}</a> <a href={result_url}> result </a> parameters = {source} <br />'
+        if source.youtube_url is not None and len(source.youtube_url) > 0:
+            source_url = source.youtube_url
+        results_links += (
+            f'<a href={source_url}> {source_url}</a> <a href={result_url}> result </a> parameters = '
+            f'{result.parameters.dict(exclude={"youtube_url"})} <br />'
+        )
     return f'''
        <!doctype html>
        <title>Upload new File</title>
@@ -82,7 +87,6 @@ def get_image(result_id):
 @app.route('/', methods=['POST'])
 def post_image():
     try:
-        logger.info(app.publisher)
         data = request.form.to_dict()
 
         if len(request.form['youtube_url']) == 0:
