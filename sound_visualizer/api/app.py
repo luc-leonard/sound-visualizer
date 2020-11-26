@@ -1,6 +1,8 @@
 import pymongo
 from flask import Flask
+from flask_restful import Api
 
+from sound_visualizer.api.resources.spectral_analysis import SpectralAnalysisResource
 from sound_visualizer.app.cache import Cache
 from sound_visualizer.app.message_queue.google_cloud_pubsub import GoogleCloudPublisher
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
@@ -23,7 +25,8 @@ class MyApp(Flask):
 
 def create_app(name):
     app = MyApp(name)
-    # api = Api(app)
+    api = Api(app)
+    api.add_resource(SpectralAnalysisResource(app.orm), '/analysis/')
     return app
 
 
