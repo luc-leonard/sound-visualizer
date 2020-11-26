@@ -29,7 +29,7 @@ The application has 2 layers: web and worker that communicates using Google PubS
 run ```make web``` and ```make worker```  and go to http://localhost:5000
 #### with docker
 
-You can use this [docker-compose file](docker/docker-compose.yml). If the images are not on dockerhub you can
+You can use this [docker-compose file](docker_files/docker-compose.yml). If the images are not on dockerhub you can
 build them with ```make docker```
 
 #### heroku

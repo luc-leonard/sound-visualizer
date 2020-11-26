@@ -7,7 +7,6 @@ import numpy as np
 import pymongo
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
-from sound_visualizer.api.config import config_from_env
 from sound_visualizer.app.converter import Mp3Converter
 from sound_visualizer.app.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
@@ -15,7 +14,11 @@ from sound_visualizer.app.message_queue.google_cloud_pubsub import GoogleCloudCo
 from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.app.sound.sound_reader import SoundReader
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
-from sound_visualizer.models.spectrogram_request_data import SpectrogramRequestData
+from sound_visualizer.config import config_from_env
+from sound_visualizer.models.spectral_analysis_request import (
+    SpectralAnalysisFlow,
+    SpectralAnalysisRequestORM,
+)
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
 
@@ -27,33 +30,32 @@ def download_file(bucket_filename, local_filename):
         storage.download_to(bucket_filename, f)
 
 
-def generate_image(request: SpectrogramRequestData) -> Image:
+def generate_image(request: SpectralAnalysisFlow) -> Image:
     stopwatch = StopWatch()
-    db.status.insert_one({'request_id': request.result_id, 'stage': 'downloading'})
-    if request.youtube_url is not None and len(request.youtube_url) == 0:
+    orm.update_request_status(request.id, 'downloading')
+    if request.parameters.youtube_url is not None and len(request.parameters.youtube_url) == 0:
         filename = '/tmp/' + str(random.randint(0, 255))
         with stopwatch:
-            download_file(request.filename, filename)
-        logger.info(f"downloaded {request.filename} in {stopwatch.interval}s")
+            download_file(request.parameters.filename, filename)
+        logger.info(f"downloaded {request.parameters.filename} in {stopwatch.interval}s")
     else:
-        filename = YoutubeDownloader().download(request.youtube_url)
+        filename = YoutubeDownloader().download(request.parameters.youtube_url)
     with stopwatch:
-        db.status.insert_one({'request_id': request.result_id, 'stage': 'converting'})
+        orm.update_request_status(request.id, 'converting')
         wav_filename = Mp3Converter(filename=filename).convert()
-    db.status.insert_one({'request_id': request.result_id, 'stage': 'analysing...'})
+    orm.update_request_status(request.id, 'analysing')
     logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
     sound_reader = SoundReader(
         filename=wav_filename,
-        start_second=request.start_second,
-        length_second=request.length_second,
+        start_second=request.parameters.start_second,
+        length_second=request.parameters.length_second,
     )
     spectral_analyser = SpectralAnalyzer(
-        frame_size=2 ** request.frame_size_power, overlap_factor=request.overlap_factor
+        frame_size=2 ** request.parameters.frame_size_power,
+        overlap_factor=request.parameters.overlap_factor,
     )
     spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(5000)
-    db.status.insert_one(
-        {'request_id': request.result_id, 'stage': 'generating image... almost done...'}
-    )
+    orm.update_request_status(request.id, 'generating image...')
     logger.info(f'generated fft data {spectral_analysis}')
     image = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
         spectral_analysis.fft_data
@@ -79,17 +81,17 @@ def generate_image(request: SpectrogramRequestData) -> Image:
 def callback(message):
     try:
         data = json.loads(message.data)
-        request = SpectrogramRequestData(**data)
+        request = SpectralAnalysisFlow(**data)
         logger.info(f'request = {request}')
-        db.status.insert_one({'request_id': request.result_id, 'stage': 'beginning'})
+        orm.update_request_status(request.id, 'beginning')
         image = generate_image(request)
         with io.BytesIO() as bytes:
             image.save(bytes, format='png')
             bytes.seek(0)
-            db.status.insert_one({'request_id': request.result_id, 'stage': 'uploading'})
-            storage.upload_from(data['result_id'] + '.png', bytes)
-            db.status.insert_one({'request_id': request.result_id, 'stage': 'finished'})
-            db.results.insert_one({'source': request.dict(), 'result': request.result_id})
+            orm.update_request_status(request.id, 'uploading image')
+            storage.upload_from(request.id + '.png', bytes)
+            orm.update_request_status(request.id, 'finished')
+            db.results.insert_one({'source': request.dict(), 'result': request.id})
         message.ack()
     except Exception as e:
         logger.error('error handling message', e)
@@ -99,6 +101,7 @@ def callback(message):
 config = config_from_env()
 client = pymongo.MongoClient(config.mongo_connection_string)
 db = client.sound_visualizer
+orm = SpectralAnalysisRequestORM(db)
 
 if __name__ == '__main__':
     init_logger()
