@@ -9,7 +9,7 @@ from sound_visualizer.models.spectral_analysis_request import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture(scope='module')
 def mongo():
     client = docker.from_env()
     mongo_container = client.containers.run('mongo', ports={27017: 4242}, detach=True)
