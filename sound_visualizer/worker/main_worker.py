@@ -39,12 +39,16 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
             download_file(request.parameters.filename, filename)
         logger.info(f"downloaded {request.parameters.filename} in {stopwatch.interval}s")
     else:
-        filename = YoutubeDownloader().download(request.parameters.youtube_url)
+        with stopwatch:
+            filename = YoutubeDownloader().download(request.parameters.youtube_url)
+        orm.add_stopwatch(request.id, 'download', stopwatch.interval)
     with stopwatch:
         orm.update_request_status(request.id, 'converting')
         wav_filename = Mp3Converter(filename=filename).convert()
-    orm.update_request_status(request.id, 'analysing')
+    orm.add_stopwatch(request.id, 'convert', stopwatch.interval)
     logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
+    orm.update_request_status(request.id, 'analysing')
+
     sound_reader = SoundReader(
         filename=wav_filename,
         start_second=request.parameters.start_second,
@@ -54,27 +58,33 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
         frame_size=2 ** request.parameters.frame_size_power,
         overlap_factor=request.parameters.overlap_factor,
     )
-    spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(5000)
+    with stopwatch:
+        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(5000)
+    orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
+    orm.add_memory_used(request.id, 'fft_data', spectral_analysis.fft_data.nbytes)
     orm.update_request_status(request.id, 'generating image...')
     logger.info(f'generated fft data {spectral_analysis}')
-    image = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
-        spectral_analysis.fft_data
-    )
-    ImageFont.load_default()
-    draw = ImageDraw.Draw(image)
-    for i in range(0, int(np.floor(spectral_analysis.time_domain[-1])), 1):
-        second_idx = spectral_analysis.time_domain.searchsorted(i)
-        draw.line([(0, second_idx), (15, second_idx)], fill='red', width=1)
-        if i % 5 == 0:
-            draw.text(xy=(0, second_idx + 16), text=f'{i}', fill='red')
-
-    for j in [10, 100, 1000, 10000]:
-        frequency_idx = spectral_analysis.frequency_domain.searchsorted(j)
-        draw.line(
-            [(frequency_idx + 15, 0), (frequency_idx + 15, image.size[1])], fill='red', width=1
+    with stopwatch:
+        image = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
+            spectral_analysis.fft_data
         )
 
-    image = ImageEnhance.Contrast(image).enhance(10.0)
+        ImageFont.load_default()
+        draw = ImageDraw.Draw(image)
+        for i in range(0, int(np.floor(spectral_analysis.time_domain[-1])), 1):
+            second_idx = spectral_analysis.time_domain.searchsorted(i)
+            draw.line([(0, second_idx), (15, second_idx)], fill='red', width=1)
+            if i % 5 == 0:
+                draw.text(xy=(0, second_idx + 16), text=f'{i}', fill='red')
+
+        for j in [10, 100, 1000, 10000]:
+            frequency_idx = spectral_analysis.frequency_domain.searchsorted(j)
+            draw.line(
+                [(frequency_idx + 15, 0), (frequency_idx + 15, image.size[1])], fill='red', width=1
+            )
+
+        image = ImageEnhance.Contrast(image).enhance(10.0)
+    orm.add_stopwatch(request.id, 'image generation', stopwatch.interval)
     return image.rotate(90, expand=True)
 
 

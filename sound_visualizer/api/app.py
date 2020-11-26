@@ -29,4 +29,3 @@ def create_app(name):
 
 init_logger()
 app = create_app(__name__)
-

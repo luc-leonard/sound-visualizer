@@ -28,8 +28,19 @@ class SpectralAnalysisRequestORM:
     def update_request_status(self, request_id, new_status):
         self._collection.update_one({'id': request_id}, {'$set': {'status': new_status}})
 
+    def add_stopwatch(self, request_id, stopwatch_name, time_spent):
+        self._collection.update_one(
+            {'id': request_id}, {'$set': {f'stopwatches.{stopwatch_name}': time_spent}}
+        )
+
+    def add_memory_used(self, request_id, name, value):
+        self._collection.update_one({'id': request_id}, {'$set': {f'memory_used.{name}': value}})
+
     def load_request_by_id(self, request_id) -> SpectralAnalysisFlow:
         return SpectralAnalysisFlow(**self._collection.find_one({'id': request_id}))
 
     def load_all_requests(self) -> List[SpectralAnalysisFlow]:
         return [SpectralAnalysisFlow(**data) for data in self._collection.find()]
+
+    def find(self, *args, **kwargs):
+        return self._collection.find(*args, **kwargs)
