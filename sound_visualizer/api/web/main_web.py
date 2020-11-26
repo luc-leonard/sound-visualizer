@@ -103,7 +103,7 @@ def post_image():
         def _thread(data_cpy):
             if len(data_cpy['youtube_url']) == 0:
                 upload_file(sound_file.filename, filename)
-            app.publisher.publish(app.topic_path, json.dumps(data_cpy).encode("utf-8"))
+            app.publisher.publish('my-topic', json.dumps(data_cpy).encode("utf-8"))
 
         threading.Thread(target=_thread, args=(data,)).start()
         app.db.status.insert_one({'request_id': data['result_id'], 'stage': 'requested'})
