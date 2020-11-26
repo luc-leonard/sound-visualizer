@@ -19,6 +19,7 @@ google-cloud-pubsub = "^2.1.0"
 google-cloud-storage = "^1.33.0"
 pymongo = "^3.11.1"
 dnspython = "^2.0.0"
+Flask-RESTful = "^0.3.8"
 
 
 [tool.poetry.dev-dependencies]

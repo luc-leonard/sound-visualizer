@@ -1,4 +1,4 @@
-from sound_visualizer.app.input.downloader.youtube import YoutubeDownloader
+from sound_visualizer.app.downloader import YoutubeDownloader
 
 
 def test_youtube():

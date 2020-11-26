@@ -25,13 +25,12 @@ lint:
 	$(black) --check --diff
 	$(POETRY) mypy .
 
-
+.PHONY: docker
 docker:
-	docker build . -t lucleonard/sound-visualizer:$(VERSION) -t lucleonard/sound-visualizer:latest
+	docker build  -f docker/Dockerfile_web -t lucleonard/sound-visualizer:$(VERSION) -t lucleonard/sound-visualizer-web:latest .
+	docker build  -f docker/Dockerfile_worker -t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
 
 publish:
-	docker push lucleonard/sound-visualizer:$(VERSION)
-	docker push lucleonard/sound-visualizer:latest
+	docker push lucleonard/sound-visualizer-web:$(VERSION)
+	docker push lucleonard/sound-visualizer-web:latest
 
-start_webserver: install
-	$(POETRY) gunicorn sound_visualizer.api.main_docker:app

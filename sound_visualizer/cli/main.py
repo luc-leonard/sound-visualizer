@@ -48,7 +48,7 @@ def arg_parse():
         default=-1,
     )
     parser.add_argument(
-        "--output-folder",
+        "--image-folder",
         type=str,
         help="the cut-off frequency. nothing above will be displayed",
         default='.',

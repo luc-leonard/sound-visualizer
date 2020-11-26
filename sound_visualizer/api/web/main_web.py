@@ -8,8 +8,8 @@ import pymongo
 from flask import g, redirect, request, send_file
 from werkzeug.utils import secure_filename
 
-from sound_visualizer.heroku_api.models.spectrogram_request_data import SpectrogramRequestData
-from sound_visualizer.heroku_api.web.app import MyApp
+from sound_visualizer.api.web.app import MyApp
+from sound_visualizer.models.spectrogram_request_data import SpectrogramRequestData
 from sound_visualizer.utils.logger import init_logger
 
 app = MyApp(__name__)
@@ -70,8 +70,8 @@ def get_image(result_id):
         if status['stage'] != 'finished':
             return status['stage']
         logger.info(f'status = {status}')
-        if app.cache.is_result_in_cache(result_id):
-            result = app.cache.get_result_in_cache(result_id)
+        if app.cache.is_data_in_cache(result_id):
+            result = app.cache.get_data_in_cache(result_id)
             return send_file(result, attachment_filename='_result.png', cache_timeout=0)
         else:
             logger.info('GETTING IMAGE FROM BUCKET')
@@ -79,7 +79,7 @@ def get_image(result_id):
             blob = app.bucket.blob(result_id + '.png')
             blob.download_to_file(data)
             data.seek(0)
-            app.cache.put_result_in_cache(result_id, data)
+            app.cache.put_data_in_cache(result_id, data)
             data.seek(0)
             return send_file(data, attachment_filename='_result.png', cache_timeout=0)
     except Exception as e:

@@ -1,2 +1,2 @@
-web: gunicorn  sound_visualizer.heroku_api.web.web_api:app --log-file -
-worker: python sound_visualizer/heroku_api/worker/worker_api.py
+web: gunicorn sound_visualizer.api.web.main_web:app --log-file -
+worker: python sound_visualizer/api/worker/main_worker.py

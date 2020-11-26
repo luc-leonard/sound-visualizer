@@ -3,7 +3,7 @@ import uuid
 
 import ffmpeg
 
-from sound_visualizer.app.input.converter.converter import Converter
+from sound_visualizer.app.converter.converter import Converter
 
 logger = logging.getLogger(__name__)
 
