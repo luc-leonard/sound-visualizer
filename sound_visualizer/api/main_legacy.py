@@ -1,5 +1,4 @@
 import io
-import json
 import logging
 import threading
 from uuid import uuid4
@@ -8,11 +7,9 @@ import pymongo
 from flask import g, redirect, request, send_file
 from werkzeug.utils import secure_filename
 
-from sound_visualizer.api.web.app import MyApp
-from sound_visualizer.models.spectrogram_request_data import SpectrogramRequestData
-from sound_visualizer.utils.logger import init_logger
-
-app = MyApp(__name__)
+from sound_visualizer.api.app import app
+from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
+from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisFlow
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +61,9 @@ def upload_file(filename, path):
 @app.route('/result/<result_id>', methods=['GET'])
 def get_image(result_id):
     try:
-        status = app.db.status.find_one(
-            {'request_id': result_id}, sort=[('_id', pymongo.DESCENDING)]
-        )
-        if status['stage'] != 'finished':
-            return status['stage']
-        logger.info(f'status = {status}')
+        request = app.orm.load_request_by_id(result_id)
+        if request.status != 'finished':
+            return request.status
         if app.cache.is_data_in_cache(result_id):
             cached_data = app.cache.get_data_in_cache(result_id)
             return send_file(cached_data, attachment_filename='_result.png', cache_timeout=0)
@@ -90,9 +84,7 @@ def post_image():
     try:
         logger.info(app.publisher)
         data = request.form.to_dict()
-        data['result_id'] = 'result_' + str(uuid4())
-        spectrogram_request = SpectrogramRequestData(**data)
-        logger.info(spectrogram_request)
+
         if len(request.form['youtube_url']) == 0:
             # upload to object storage
             sound_file = request.files['sound_file']
@@ -100,19 +92,27 @@ def post_image():
             sound_file.save(filename)
             data['filename'] = sound_file.filename
 
+        spectral_request = SpectralAnalysisFlow(
+            id='result_' + str(uuid4()),
+            parameters=SpectralAnalysisParameters(**data),
+            status='requested',
+        )
+        logger.info(spectral_request)
+        app.orm.save_request(spectral_request)
+
         def _thread(data_cpy):
             if len(data_cpy['youtube_url']) == 0:
                 upload_file(sound_file.filename, filename)
-            app.publisher.publish('my-topic', json.dumps(data_cpy).encode("utf-8"))
+            app.publisher.publish('my-topic', spectral_request.json().encode("utf-8"))
 
         threading.Thread(target=_thread, args=(data,)).start()
-        app.db.status.insert_one({'request_id': data['result_id'], 'stage': 'requested'})
-        return redirect('/result/' + data['result_id'])
+
+        return redirect('/result/' + spectral_request.id)
     except Exception as e:
         return str(e), 400
 
 
 # outside of main for gunicorn
-init_logger()
+
 if __name__ == '__main__':
     app.run()
