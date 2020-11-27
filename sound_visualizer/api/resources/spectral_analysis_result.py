@@ -22,7 +22,8 @@ def SpectralAnalysisResultResource(storage: Storage, cache: Cache):
                 data.seek(0)
                 cache.put_data_in_cache(analysis_id, data)
                 data.seek(0)
-            # the cache duration can be VERY high, results are immutables
+            # the cache duration can be VERY high, results are immutables.
+            # But since we are in a WIP, let's put it low, so we can fix things :P
             return send_file(data, attachment_filename='_result.png', cache_timeout=600)
 
     return SpectralAnalysisResultImpl

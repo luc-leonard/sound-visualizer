@@ -1,3 +1,5 @@
+import logging
+
 import pymongo
 from flask import Flask
 from flask_restful import Api
@@ -15,7 +17,7 @@ from sound_visualizer.config import config_from_env
 from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisFlowORM
 from sound_visualizer.utils.logger import init_logger
 
-config = config_from_env()
+logger = logging.getLogger(__name__)
 
 
 class MyApp(Flask):
@@ -29,7 +31,10 @@ class MyApp(Flask):
 
 
 def create_app(name):
-    app = MyApp(name)
+    import os
+
+    logger.info(f'CURRENT PATH = {os.getcwd()}')
+    app = MyApp(name, static_folder=f'{os.getcwd()}/static', static_url_path='/www/')
     api = Api(app)
 
     handler = SpectralAnalysisRequestHandler(app.orm, app.publisher, app.storage)

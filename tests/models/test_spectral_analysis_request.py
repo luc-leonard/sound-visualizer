@@ -1,7 +1,7 @@
-import docker
 import pymongo
 import pytest
 
+import docker
 from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
 from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,
