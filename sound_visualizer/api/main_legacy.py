@@ -1,10 +1,9 @@
-import io
 import logging
 import threading
 from uuid import uuid4
 
 import pymongo
-from flask import g, redirect, request, send_file
+from flask import g, redirect, request
 from werkzeug.utils import secure_filename
 
 from sound_visualizer.api.app import app
@@ -61,27 +60,6 @@ def upload_file(filename, path):
     blob = g.bucket.blob(filename)
     blob.upload_from_filename(path, timeout=600)
     logger.info(f'{filename} uploaded')
-
-
-@app.route('/result/<result_id>', methods=['GET'])
-def get_image(result_id):
-    try:
-        request = app.orm.load_request_by_id(result_id)
-        if request.status != 'finished':
-            return request.status
-        if app.cache.is_data_in_cache(result_id):
-            cached_data = app.cache.get_data_in_cache(result_id)
-            return send_file(cached_data, attachment_filename='_result.png', cache_timeout=0)
-        else:
-            logger.info('GETTING IMAGE FROM BUCKET')
-            data = io.BytesIO()
-            app.storage.download_to(result_id + '.png', data)
-            data.seek(0)
-            app.cache.put_data_in_cache(result_id, data)
-            data.seek(0)
-            return send_file(data, attachment_filename='_result.png', cache_timeout=0)
-    except Exception as e:
-        return f'Please try again later {e}'
 
 
 @app.route('/', methods=['POST'])

@@ -189,6 +189,18 @@ docs = ["sphinx", "pallets-sphinx-themes", "sphinxcontrib-log-cabinet", "sphinx-
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-pydantic"
+version = "0.4.0"
+description = "Flask extension for integration with Pydantic library"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+Flask = ">=1.1.1,<1.2.0"
+pydantic = ">=1.3,<2.0"
+
+[[package]]
 name = "flask-restful"
 version = "0.3.8"
 description = "Simple framework for creating REST APIs"
@@ -490,6 +502,14 @@ python-versions = "*"
 name = "numpy"
 version = "1.19.4"
 description = "NumPy is the fundamental package for array computing with Python."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
+name = "orjson"
+version = "3.4.4"
+description = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
 category = "main"
 optional = false
 python-versions = ">=3.6"
@@ -866,7 +886,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "5ff8ea0d251b985edcb16f0983da16c0c277c3fb16178ddd7ff869a5701aba88"
+content-hash = "51d2e4f44a9616036defa8cf716c5ca7d293941147a3f3a0d66d3f91b4ce7ede"
 
 [metadata.files]
 aniso8601 = [
@@ -965,6 +985,10 @@ flake8 = [
 flask = [
     {file = "Flask-1.1.2-py2.py3-none-any.whl", hash = "sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"},
     {file = "Flask-1.1.2.tar.gz", hash = "sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060"},
+]
+flask-pydantic = [
+    {file = "Flask-Pydantic-0.4.0.tar.gz", hash = "sha256:57f88486ae89ad9ac6eef230b83d948132b7d0ee92b59fda598e0f92ecdced68"},
+    {file = "Flask_Pydantic-0.4.0-py3-none-any.whl", hash = "sha256:e438ea26e8c4f965cdd5d6496cf0b589cce648a0389651c712b78c29308b0d6b"},
 ]
 flask-restful = [
     {file = "Flask-RESTful-0.3.8.tar.gz", hash = "sha256:5ea9a5991abf2cb69b4aac19793faac6c032300505b325687d7c305ffaa76915"},
@@ -1194,6 +1218,25 @@ numpy = [
     {file = "numpy-1.19.4-cp39-cp39-win_amd64.whl", hash = "sha256:4377e10b874e653fe96985c05feed2225c912e328c8a26541f7fc600fb9c637b"},
     {file = "numpy-1.19.4-pp36-pypy36_pp73-manylinux2010_x86_64.whl", hash = "sha256:2a2740aa9733d2e5b2dfb33639d98a64c3b0f24765fed86b0fd2aec07f6a0a08"},
     {file = "numpy-1.19.4.zip", hash = "sha256:141ec3a3300ab89c7f2b0775289954d193cc8edb621ea05f99db9cb181530512"},
+]
+orjson = [
+    {file = "orjson-3.4.4-cp36-cp36m-macosx_10_7_x86_64.whl", hash = "sha256:e987e5fa2ca80b9f5b856088effe00facb5672559721a6c1f0a8d53a1514c18b"},
+    {file = "orjson-3.4.4-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:0715ae45c37e05911cd1c63b4e45c2dda7634f031b50f5a4112a76827840fce1"},
+    {file = "orjson-3.4.4-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:4663a44c769b885a0673dcfae34bbb64f1d18a44f55660672eb79085d5a8fbc4"},
+    {file = "orjson-3.4.4-cp36-none-win_amd64.whl", hash = "sha256:a1d111fe28fada2e08cb56c29c316b4b07afd7d0f8c178192125e6fe2f34846c"},
+    {file = "orjson-3.4.4-cp37-cp37m-macosx_10_7_x86_64.whl", hash = "sha256:e1bd26e202e9126c7d6e081df1f5d28cdb714e2ebb03f28d6b966bac5a19cb4c"},
+    {file = "orjson-3.4.4-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:46b78a1c7bc4c7f5e0c2ef4e25313d8021556f0aeff41f25ea6cf87b00d85b4a"},
+    {file = "orjson-3.4.4-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:17c9ee3a90af53358d774c21f76a39ecc26be20e3c1efcb48ade9d49b6b87547"},
+    {file = "orjson-3.4.4-cp37-none-win_amd64.whl", hash = "sha256:31cffd739adad89935884940466fab5ebcea4f41fd7691bdb16d15fb476cc48c"},
+    {file = "orjson-3.4.4-cp38-cp38-macosx_10_7_x86_64.whl", hash = "sha256:daa7484eb4854371332eeb61e11df31716cc207c7d433c9273fd4757d909ee9a"},
+    {file = "orjson-3.4.4-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:9f22eaef23be0452fc41ff49f72ebe50a06ed4d13884d7a36a239ff57b8900d4"},
+    {file = "orjson-3.4.4-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:57837ab34f22608a1ef08ebbb2b14e780f6f0321e95169efa9d5c0383b124890"},
+    {file = "orjson-3.4.4-cp38-none-win_amd64.whl", hash = "sha256:9f3a4de7d2b1749dd482457c2dfc6190e21dc8cccc3113abb409d028e9b63480"},
+    {file = "orjson-3.4.4-cp39-cp39-macosx_10_7_x86_64.whl", hash = "sha256:b0b324377f22c42165315a1ef193f189b81893dbd91d1b81c66a3fd7e1d5e298"},
+    {file = "orjson-3.4.4-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:f23898a57fcf1f5d03208b69eb51e048ef74105543488777f33dff87bb244618"},
+    {file = "orjson-3.4.4-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:2b8d76e802e33f58d7d7deea72f19da8f8619afc591584c795328473b0722776"},
+    {file = "orjson-3.4.4-cp39-none-win_amd64.whl", hash = "sha256:d9869d598076331945ffdf27b04f8d53a2004dde725aed4a852125aaedca73bd"},
+    {file = "orjson-3.4.4.tar.gz", hash = "sha256:19e28a554625812a8049368020bbf69a50a946db6a0b784d7611fcbe76854278"},
 ]
 packaging = [
     {file = "packaging-20.4-py2.py3-none-any.whl", hash = "sha256:998416ba6962ae7fbd6596850b80e17859a5753ba17c32284f67bfff33784181"},

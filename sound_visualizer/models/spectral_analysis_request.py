@@ -18,7 +18,7 @@ class SpectralAnalysisFlow(BaseModel):
     status: str
 
 
-class SpectralAnalysisRequestORM:
+class SpectralAnalysisFlowORM:
     def __init__(self, database):
         self._collection = database[_COLLECTION_NAME]
 
@@ -39,8 +39,12 @@ class SpectralAnalysisRequestORM:
     def load_request_by_id(self, request_id) -> SpectralAnalysisFlow:
         return SpectralAnalysisFlow(**self._collection.find_one({'id': request_id}))
 
-    def load_all_requests(self) -> List[SpectralAnalysisFlow]:
-        return [SpectralAnalysisFlow(**data) for data in self._collection.find()]
+    def load_all_requests(self, offset: int = 0, len: int = -1) -> List[SpectralAnalysisFlow]:
+        if len == -1:
+            requests = self._collection.find()[offset:]
+        else:
+            requests = self._collection.find()[offset:len]
+        return [SpectralAnalysisFlow(**data) for data in requests]
 
     def find(self, *args, **kwargs):
         return self._collection.find(*args, **kwargs)

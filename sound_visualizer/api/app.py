@@ -2,12 +2,17 @@ import pymongo
 from flask import Flask
 from flask_restful import Api
 
-from sound_visualizer.api.resources.spectral_analysis import SpectralAnalysisResource
+from sound_visualizer.api.resources.spectral_analysis_request import (
+    SpectralAnalysisRequestListResource,
+    SpectralAnalysisRequestResource,
+)
+from sound_visualizer.api.resources.spectral_analysis_result import SpectralAnalysisResultResource
 from sound_visualizer.app.cache import Cache
 from sound_visualizer.app.message_queue.google_cloud_pubsub import GoogleCloudPublisher
+from sound_visualizer.app.spectral_analysis_request_handler import SpectralAnalysisRequestHandler
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
-from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisRequestORM
+from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisFlowORM
 from sound_visualizer.utils.logger import init_logger
 
 config = config_from_env()
@@ -20,13 +25,24 @@ class MyApp(Flask):
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
     client = pymongo.MongoClient(config.mongo_connection_string)
     db = client.sound_visualizer
-    orm = SpectralAnalysisRequestORM(db)
+    orm = SpectralAnalysisFlowORM(db)
 
 
 def create_app(name):
     app = MyApp(name)
     api = Api(app)
-    api.add_resource(SpectralAnalysisResource(app.orm), '/analysis/')
+
+    handler = SpectralAnalysisRequestHandler(app.orm, app.publisher, app.storage)
+    api.add_resource(
+        SpectralAnalysisRequestListResource(handler),
+        '/requests/',
+    )
+    api.add_resource(SpectralAnalysisRequestResource(handler), '/request/<string:analysis_id>')
+
+    api.add_resource(
+        SpectralAnalysisResultResource(storage=app.storage, cache=app.cache),
+        '/result/<string:analysis_id>',
+    )
     return app
 
 

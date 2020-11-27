@@ -5,7 +5,7 @@ import pytest
 from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
 from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,
-    SpectralAnalysisRequestORM,
+    SpectralAnalysisFlowORM,
 )
 
 
@@ -23,7 +23,7 @@ def mongo_client(mongo):
 
 
 def test_should_load(mongo_client):
-    orm = SpectralAnalysisRequestORM(mongo_client['dummy'])
+    orm = SpectralAnalysisFlowORM(mongo_client['dummy'])
     analysis = SpectralAnalysisFlow(
         id='foobar',
         status='REQUESTED',
@@ -34,7 +34,7 @@ def test_should_load(mongo_client):
 
 
 def test_should_load_by_id(mongo_client):
-    orm = SpectralAnalysisRequestORM(mongo_client['dummy'])
+    orm = SpectralAnalysisFlowORM(mongo_client['dummy'])
     analysis = SpectralAnalysisFlow(
         id='foobar',
         status='REQUESTED',
