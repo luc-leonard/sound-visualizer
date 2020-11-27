@@ -1,18 +1,8 @@
-sounds/*
-.ipynb_checkpoints
-.mypy_cache
-.idea
-__pycache__
-.pytest_cache
-for_heroku/luc-leonard-sound-visualizer-credentials.json
-for_heroku/
-for_docker/
-
 .DS_Store
 node_modules
 /dist
 
-# added by vye
+
 # local env files
 .env.local
 .env.*.local
