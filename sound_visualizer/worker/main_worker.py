@@ -17,7 +17,7 @@ from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
 from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,
-    SpectralAnalysisRequestORM,
+    SpectralAnalysisFlowORM,
 )
 from sound_visualizer.utils import StopWatch
 from sound_visualizer.utils.logger import init_logger
@@ -111,7 +111,7 @@ def callback(message):
 config = config_from_env()
 client = pymongo.MongoClient(config.mongo_connection_string)
 db = client.sound_visualizer
-orm = SpectralAnalysisRequestORM(db)
+orm = SpectralAnalysisFlowORM(db)
 
 if __name__ == '__main__':
     init_logger()
