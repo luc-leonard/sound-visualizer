@@ -10,7 +10,6 @@ for_docker/
 
 .DS_Store
 node_modules
-/dist
 
 # added by vye
 # local env files
