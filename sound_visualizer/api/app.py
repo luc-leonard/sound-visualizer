@@ -45,7 +45,7 @@ def create_app(name):
     api.add_resource(SpectralAnalysisRequestResource(handler), '/request/<string:analysis_id>')
 
     api.add_resource(
-        SpectralAnalysisResultResource(storage=app.storage, cache=app.cache),
+        SpectralAnalysisResultResource(storage=app.storage, cache=app.cache, orm=app.orm),
         '/result/<string:analysis_id>',
     )
     return app

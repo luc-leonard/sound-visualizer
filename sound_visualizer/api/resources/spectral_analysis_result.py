@@ -6,13 +6,17 @@ from flask_restful import Resource
 
 from sound_visualizer.app.cache import Cache
 from sound_visualizer.app.storage.storage import Storage
+from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisFlowORM
 
 logger = logging.getLogger(__name__)
 
 
-def SpectralAnalysisResultResource(storage: Storage, cache: Cache):
+def SpectralAnalysisResultResource(orm: SpectralAnalysisFlowORM, storage: Storage, cache: Cache):
     class SpectralAnalysisResultImpl(Resource):
         def get(self, analysis_id: str):
+            flow = orm.load_request_by_id(analysis_id)
+            if flow.status != 'finished':
+                return flow.dict()
             if cache.is_data_in_cache(analysis_id):
                 data = cache.get_data_in_cache(analysis_id)
             else:
