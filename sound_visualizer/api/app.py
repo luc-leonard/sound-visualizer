@@ -2,7 +2,9 @@ import logging
 
 import pymongo
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Api
+from flask_restful.utils.cors import crossdomain
 
 from sound_visualizer.api.resources.spectral_analysis_request import (
     SpectralAnalysisRequestListResource,
@@ -21,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 class MyApp(Flask):
-    config = config_from_env()
+    the_config = config_from_env()
     cache = Cache(cache_folder='/tmp/sound_visualizer')
-    publisher = GoogleCloudPublisher(config.google_application_project_name)
-    storage = GoogleCloudStorage(config.google_storage_bucket_name)
-    client = pymongo.MongoClient(config.mongo_connection_string)
+    publisher = GoogleCloudPublisher(the_config.google_application_project_name)
+    storage = GoogleCloudStorage(the_config.google_storage_bucket_name)
+    client = pymongo.MongoClient(the_config.mongo_connection_string)
     db = client.sound_visualizer
     orm = SpectralAnalysisFlowORM(db)
 
@@ -35,8 +37,11 @@ def create_app(name):
 
     logger.info(f'CURRENT PATH = {os.getcwd()}')
     app = MyApp(name, static_folder=f'{os.getcwd()}/static', static_url_path='/www/')
+    logger.info(app.the_config)
     api = Api(app)
-
+    if app.the_config.cors_origin is not None:
+        CORS(app, resources={r"/*": {"origins": app.the_config.cors_origin}})
+        api.decorators = [crossdomain(origin=app.the_config.cors_origin)]
     handler = SpectralAnalysisRequestHandler(app.orm, app.publisher, app.storage)
     api.add_resource(
         SpectralAnalysisRequestListResource(handler),
