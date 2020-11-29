@@ -28,7 +28,7 @@ export default class App extends Vue {
 
   mounted() {
     Axios
-        .get('http://localhost:5000/requests')
+        .get('https://luc-leonard-sound-visualizer.herokuapp.com/requests/')
         .then(response => {
               this.info = response.data
             }
