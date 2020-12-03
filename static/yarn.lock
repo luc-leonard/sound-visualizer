@@ -1710,6 +1710,11 @@
     semver "^7.3.2"
     tsutils "^3.17.1"
 
+"@vue-leaflet/vue-leaflet@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@vue-leaflet/vue-leaflet/-/vue-leaflet-0.5.0.tgz#7b70ccaee065b1c323955d2cebc303335993f020"
+  integrity sha512-cgrNBRyQKB4Ea7ykiDpawIjLj/k88tWm4e78w4SsveNwkbckdoVS+IpmCxqlG1FZ5IScLQeTp8J528sDR3Kk2A==
+
 "@vue/babel-helper-vue-jsx-merge-props@^1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@vue/babel-helper-vue-jsx-merge-props/-/babel-helper-vue-jsx-merge-props-1.2.1.tgz"
@@ -7817,6 +7822,11 @@ launch-editor@^2.2.1:
     chalk "^2.3.0"
     shell-quote "^1.6.1"
 
+leaflet@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.7.1.tgz#10d684916edfe1bf41d688a3b97127c0322a2a19"
+  integrity sha512-/xwPEBidtg69Q3HlqPdU3DnrXQOvQU/CCHA1tcDQVzOwm91YMYaILjNp7L4Eaw5Z4sOYdbBz6koWyibppd8Zqw==
+
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.npmjs.org/leven/-/leven-3.1.0.tgz"
@@ -12137,6 +12147,11 @@ vue-youtube@^1.4.0:
   dependencies:
     get-youtube-id "^1.0.0"
     youtube-player "^5.4.0"
+
+vue2-leaflet@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/vue2-leaflet/-/vue2-leaflet-2.6.0.tgz#c83c60a745fbc2a74d9dbd0f75b2a5ae07d220a9"
+  integrity sha512-JG+w9TtNuk1yRpPta+RjzH6J+opdRUPzSo8UuBnwk+a/6XD0f2tsaB6g3D6ZpBgIE4wZA2dbZ0dZFz2ulYMj3A==
 
 vue@^2.6.11:
   version "2.6.12"

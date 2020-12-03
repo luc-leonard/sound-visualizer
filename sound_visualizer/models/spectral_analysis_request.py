@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+import pymongo
 from pydantic import BaseModel
 
 from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
@@ -40,10 +41,12 @@ class SpectralAnalysisFlowORM:
         return SpectralAnalysisFlow(**self._collection.find_one({'id': request_id}))
 
     def load_all_requests(self, offset: int = 0, len: int = -1) -> List[SpectralAnalysisFlow]:
+        cursor = self._collection.find().sort('_id', pymongo.DESCENDING)
+
         if len == -1:
-            requests = self._collection.find()[offset:]
+            requests = cursor[offset:]
         else:
-            requests = self._collection.find()[offset:len]
+            requests = cursor[offset:len]
         return [SpectralAnalysisFlow(**data) for data in requests]
 
     def find(self, *args, **kwargs):
