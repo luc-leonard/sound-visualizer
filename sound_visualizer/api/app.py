@@ -11,6 +11,7 @@ from sound_visualizer.api.resources.spectral_analysis_request import (
     SpectralAnalysisRequestResource,
 )
 from sound_visualizer.api.resources.spectral_analysis_result import SpectralAnalysisResultResource
+from sound_visualizer.api.resources.tiles_resource import TilesResources
 from sound_visualizer.app.cache import Cache
 from sound_visualizer.app.message_queue.google_cloud_pubsub import GoogleCloudPublisher
 from sound_visualizer.app.spectral_analysis_request_handler import SpectralAnalysisRequestHandler
@@ -43,6 +44,7 @@ def create_app(name):
         CORS(app, resources={r"/*": {"origins": app.the_config.cors_origin}})
         api.decorators = [crossdomain(origin=app.the_config.cors_origin)]
     handler = SpectralAnalysisRequestHandler(app.orm, app.publisher, app.storage)
+
     api.add_resource(
         SpectralAnalysisRequestListResource(handler),
         '/requests/',
@@ -52,6 +54,10 @@ def create_app(name):
     api.add_resource(
         SpectralAnalysisResultResource(storage=app.storage, cache=app.cache, orm=app.orm),
         '/result/<string:analysis_id>',
+    )
+    api.add_resource(
+        TilesResources(storage=app.storage, cache=app.cache),
+        '/tiles/<string:result_id>/<int:zoom_level>/<int:x>/<int:y>.png',
     )
     return app
 

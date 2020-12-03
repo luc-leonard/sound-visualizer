@@ -15,8 +15,8 @@ import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
 Vue.mixin({
   data() {
     return {
-     get API_BASE_URL() { return 'https://luc-leonard-sound-visualizer.herokuapp.com'}
-     //get API_BASE_URL() { return 'http://localhost:5000'}
+     //get API_BASE_URL() { return 'https://luc-leonard-sound-visualizer.herokuapp.com'}
+     get API_BASE_URL() { return 'http://localhost:5000'}
     }
   }
 })
@@ -32,7 +32,7 @@ export default class App extends Vue {
   mounted() {
 
     Axios
-        .get(this.$data.API_BASE_URL + '/requests/')
+        .get(this.$data.API_BASE_URL + '/requests/?length=1')
         .then(response => {
               this.info = response.data
             }

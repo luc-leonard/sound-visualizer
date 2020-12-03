@@ -59,7 +59,7 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
         overlap_factor=request.parameters.overlap_factor,
     )
     with stopwatch:
-        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(5000)
+        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(10000)
     orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
     orm.add_memory_used(request.id, 'fft_data', spectral_analysis.fft_data.nbytes)
     orm.update_request_status(request.id, 'generating image...')
@@ -83,7 +83,7 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
                 [(frequency_idx + 15, 0), (frequency_idx + 15, image.size[1])], fill='red', width=1
             )
 
-        image = ImageEnhance.Contrast(image).enhance(10.0)
+        image = ImageEnhance.Contrast(image).enhance(5.0)
     orm.add_stopwatch(request.id, 'image generation', stopwatch.interval)
     return image.rotate(90, expand=True)
 
@@ -105,6 +105,8 @@ def callback(message):
         message.ack()
     except Exception as e:
         logger.error('error handling message', e)
+        message.ack()
+    finally:
         message.ack()
 
 

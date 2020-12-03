@@ -1,5 +1,5 @@
 {
-  "name": "souns-visualizer-front",
+  "name": "sound-visualizer-front",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,14 +8,17 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@vue-leaflet/vue-leaflet": "^0.5.0",
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
     "get-youtube-id": "^1.0.1",
+    "leaflet": "^1.7.1",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2",
     "vue-worker": "^1.2.1",
-    "vue-youtube": "^1.4.0"
+    "vue-youtube": "^1.4.0",
+    "vue2-leaflet": "^2.6.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.12.1",

@@ -1,16 +1,18 @@
 <template>
   <div class="element">
-    <youtube :video-id="get_youtube_id()" ref="youtube"
-             :player-vars="players_vars" @playing="playing"></youtube>
-    <div>{{ current_position }}</div>
-    <button @click="update_position"/>
-    <div class="image" ref="image_container">
-      <img alt="spectrogram" :src="make_url(API_BASE_URL)" ref="image"/>
+    <youtube :video-id="get_youtube_id()" ref="youtube" :player-vars="players_vars" @playing="playing">
+    </youtube>
+<!--    <l-map class="map">-->
+<!--      <l-tile-layer :url="map_url"></l-tile-layer>-->
+<!--    </l-map>-->
+    <div class="image_container" ref="image_container" v-show="true">
+      <img alt="spectrogram" class="image" :src="make_url(API_BASE_URL)" ref="image"/>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+
 import {Component, Prop, Vue} from 'vue-property-decorator';
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
@@ -25,25 +27,31 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   current_position: number = 0;
   pixel_per_sec = -1;
   youtube_player!: any
+  map_url = 'http://localhost:5000/tiles/' + this.element.id + '/{z}/{x}/{y}.png';
 
-  playing(){
+
+
+  playing() {
     console.log("START PLAYING")
     this.$nextTick(function () {
-            window.setInterval(() => {
-                this.update_position();
-            },25);
-        })
+      window.setInterval(() => {
+        this.update_position();
+      }, 25);
+    })
   }
+
   update_position() {
     if (this.pixel_per_sec == -1) {
       let image: any = this.$refs.image;
-      this.player().getDuration().then((duration: number) => this.pixel_per_sec = image.width / duration)
+      this.player().getDuration().then((duration: number) => {
+        this.pixel_per_sec = image.width / duration;
+      });
     }
 
     this.player().getCurrentTime().then((current_time: any) => {
       let container: any = this.$refs.image_container;
       this.current_position = current_time;
-      container.scrollTo(current_time * this.pixel_per_sec, 0);
+      container.scrollTo(current_time * this.pixel_per_sec + 10, 0);
     })
   }
 
@@ -66,8 +74,17 @@ export default class SpectralAlaysisFlowListElement extends Vue {
 </script>
 
 <style scoped>
+.map{
+  height: 510px;
+}
+.image_container {
+  overflow: scroll;
+  width: 95%;
+  border: 1px solid #ff0000;
+  background-color: black;
+}
+
 .image {
-  overflow: auto;
-  width: 1000px;
+  margin-right: 100%;
 }
 </style>1
