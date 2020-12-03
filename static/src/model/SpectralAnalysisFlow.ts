@@ -1,6 +1,6 @@
 export class SpectralAnalysisParameters {
     constructor(
-        public url: string,
+        public youtube_url: string,
        public  start_second: number,
         public length_second: number,
         public overlap_factor: number,
