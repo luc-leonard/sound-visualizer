@@ -1,11 +1,11 @@
 import os
-from typing import Optional
+from typing import List
 
 from pydantic import BaseModel
 
 
 class Config(BaseModel):
-    cors_origin: Optional[str]
+    cors_origin: List[str]
 
     mongo_connection_string: str
 
@@ -15,4 +15,11 @@ class Config(BaseModel):
 
 
 def config_from_env():
-    return Config(**{field: os.getenv(field.upper()) for field in Config.__fields__})
+    cors_origin = os.getenv('CORS_ORIGIN', '')
+    splitted_cors_origin = cors_origin.split(';')
+    return Config(
+        cors_origin=splitted_cors_origin,
+        **{
+            field: os.getenv(field.upper()) for field in Config.__fields__ if field != 'cors_origin'
+        },
+    )
