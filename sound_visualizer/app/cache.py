@@ -1,8 +1,11 @@
+import io
 import os
 import typing as t
 from pathlib import Path
 
 from pydantic import BaseModel
+
+from sound_visualizer.app.storage.storage import Storage
 
 
 class Cache(BaseModel):
@@ -24,3 +27,20 @@ class Cache(BaseModel):
     def put_data_in_cache(self, data_id: str, data: t.BinaryIO):
         file = open(self._get_data_path(data_id), mode='wb')
         return file.write(data.read())
+
+
+class CachedStorage:
+    def __init__(self, cache: Cache, storage: Storage):
+        self.cache = cache
+        self.storage = storage
+
+    def get(self, data_id: str) -> t.BinaryIO:
+        if self.cache.is_data_in_cache(data_id):
+            return self.cache.get_data_in_cache(data_id)
+        else:
+            data = io.BytesIO()
+            self.storage.download_to(data_id, data)
+            data.seek(0)
+            self.cache.put_data_in_cache(data_id, data)
+            data.seek(0)
+            return data
