@@ -57,7 +57,7 @@ def create_app(name):
     )
     api.add_resource(
         TilesResources(storage=app.storage, cache=app.cache),
-        '/tiles/<string:result_id>/<int:zoom_level>/<int:x>/<int:y>.png',
+        '/tiles/<string:result_id>/<int:x>.png',
     )
     return app
 
