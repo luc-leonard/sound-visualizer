@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import pymongo
 from pydantic import BaseModel
@@ -6,6 +6,11 @@ from pydantic import BaseModel
 from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
 
 _COLLECTION_NAME = 'spectral-analysis'
+
+
+class SpectralAnalysisResult(BaseModel):
+    width: int
+    height: int
 
 
 class SpectralAnalysisFlow(BaseModel):
@@ -17,6 +22,7 @@ class SpectralAnalysisFlow(BaseModel):
     memory_used: Dict[str, int] = {}
     # really an enum but pymongo complains :(
     status: str
+    result: Optional[SpectralAnalysisResult]
 
 
 class SpectralAnalysisFlowORM:
@@ -51,3 +57,9 @@ class SpectralAnalysisFlowORM:
 
     def find(self, *args, **kwargs):
         return self._collection.find(*args, **kwargs)
+
+    def save_image_size(self, id, size):
+        self._collection.update_one({'id': id, 'result': None}, {'$set': {'result': {}}})
+        self._collection.update_one(
+            {'id': id}, {'$set': {'result.width': size[0], 'result.height': size[1]}}
+        )

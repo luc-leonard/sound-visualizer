@@ -4,6 +4,7 @@ import logging
 import random
 
 import numpy as np
+import PIL
 import pymongo
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
@@ -28,6 +29,37 @@ logger = logging.getLogger(__name__)
 def download_file(bucket_filename, local_filename):
     with open(local_filename, 'wb') as f:
         storage.download_to(bucket_filename, f)
+
+
+def vstack(images):
+    if len(images) == 0:
+        raise ValueError("Need 0 or more images")
+
+    if isinstance(images[0], np.ndarray):
+        images = [Image.fromarray(img) for img in images]
+    width = max([img.size[0] for img in images])
+    height = sum([img.size[1] for img in images])
+    stacked = Image.new(images[0].mode, (width, height))
+
+    y_pos = 0
+    for img in images:
+        stacked.paste(img, (0, y_pos))
+        y_pos += img.size[1]
+    return stacked
+
+
+def toLogScale(image: PIL.Image, frequency_domain: np.ndarray) -> PIL.Image:
+    cut_offs = [0, 5000, 15000, 100000]
+    idx_cutoffs = [frequency_domain.searchsorted(frequency) for frequency in cut_offs]
+
+    images = [
+        image.copy()
+        .crop((0, image.height - upper_frequency, image.width, image.height - lower_frequency))
+        .resize((image.width, idx_cutoffs[1]))
+        for (lower_frequency, upper_frequency) in zip(idx_cutoffs, idx_cutoffs[1:])
+    ]
+
+    return vstack(list(reversed(images)))
 
 
 def generate_image(request: SpectralAnalysisFlow) -> Image:
@@ -59,7 +91,7 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
         overlap_factor=request.parameters.overlap_factor,
     )
     with stopwatch:
-        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader).high_cut(10000)
+        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
     orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
     orm.add_memory_used(request.id, 'fft_data', spectral_analysis.fft_data.nbytes)
     orm.update_request_status(request.id, 'generating image...')
@@ -84,8 +116,10 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
             )
 
         image = ImageEnhance.Contrast(image).enhance(5.0)
+        image = image.rotate(90, expand=True)
+        image = toLogScale(image, spectral_analysis.frequency_domain)
     orm.add_stopwatch(request.id, 'image generation', stopwatch.interval)
-    return image.rotate(90, expand=True)
+    return image
 
 
 def callback(message):
@@ -95,6 +129,7 @@ def callback(message):
         logger.info(f'request = {request}')
         orm.update_request_status(request.id, 'beginning')
         image = generate_image(request)
+        orm.save_image_size(request.id, image.size)
         with io.BytesIO() as bytes:
             image.save(bytes, format='png')
             bytes.seek(0)
@@ -104,7 +139,7 @@ def callback(message):
             db.results.insert_one({'source': request.dict(), 'result': request.id})
         message.ack()
     except Exception as e:
-        logger.error('error handling message', e)
+        logger.error('error handling message', exc_info=e)
         message.ack()
     finally:
         message.ack()
