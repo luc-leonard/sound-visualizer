@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def TilesResources(storage: Storage, cache: Cache):
     class TilesResourcesImpl(Resource):
-        def get(self, result_id: str, zoom_level: int, x: int, y: int):
+        def get(self, result_id: str, x: int):
             logger.info(vars())
             if cache.is_data_in_cache(result_id):
                 data = cache.get_data_in_cache(result_id)
