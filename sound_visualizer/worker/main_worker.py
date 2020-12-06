@@ -134,7 +134,7 @@ def callback(message):
             image.save(bytes, format='png')
             bytes.seek(0)
             orm.update_request_status(request.id, 'uploading image')
-            storage.upload_from(request.id + '.png', bytes)
+            storage.upload_from(request.id, bytes)
             orm.update_request_status(request.id, 'finished')
             db.results.insert_one({'source': request.dict(), 'result': request.id})
         message.ack()
