@@ -3,9 +3,12 @@
     <youtube :class="$style.player" :video-id="get_youtube_id()" ref="youtube" :player-vars="players_vars" @playing="playing">
     </youtube>
     <ScrollingCanvas :image_url="make_url(API_BASE_URL)"
-                      :width="element.result.width"
+                      width="2000"
                       :height="element.result.height"
+                     tile_width="5000"
+                     :tile_height="element.result.height"
                      class="image_container"
+                     :image_url_base="make_url(API_BASE_URL)"
                      ref="spectro"></ScrollingCanvas>
   </div>
 </template>
@@ -34,6 +37,7 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   playing() {
     console.log("START PLAYING")
     this.$nextTick(function () {
+      //requestAnimationFrame(this.update_position);
       window.setInterval(() => {
         this.update_position();
       }, 25);
@@ -59,7 +63,7 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   }
 
   make_url(base_url: string) {
-    return base_url + '/result/' + this.element.id
+    return base_url + '/tiles/' + this.element.id + '/'
   }
 
   player() {

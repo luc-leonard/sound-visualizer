@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def TilesResources(storage: Storage, cache: Cache):
-    tiler = HorizontalTiler(cache, storage, 500)
+    tiler = HorizontalTiler(cache, storage, 5000)
 
     class TilesResourcesImpl(Resource):
         def get(self, result_id: str, x: int):

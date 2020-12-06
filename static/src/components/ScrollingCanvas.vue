@@ -11,25 +11,27 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 @Component({})
 export default class ScrollingCanvas extends Vue {
   @Prop({required: true})
-  image_url!: string;
+  image_url_base!: string;
   @Prop({required: true})
   width!: number;
   @Prop({required: true})
   height!: number;
-  image!: HTMLImageElement;
+  @Prop({required: true})
+  tile_width!: number;
+  @Prop({required: true})
+  tile_height!: number;
+
+  images: Array<HTMLImageElement | null> = new Array<HTMLImageElement | null>();
   context!: CanvasRenderingContext2D;
   mounted() {
     console.log('loading image...')
-    this.image = new Image(this.width, this.height);
+
     let canvas = (this.$refs.theCanvas as any);
     this.context = canvas.getContext('2d')
-    canvas.width = 1000;
-    canvas.height = 2000;
-    this.image.onload = () => {
-      this.scrollTo(0)
-
-    }
-    this.image.src = this.image_url;
+    canvas.width = this.width;
+    canvas.height = this.height;
+    console.log(this)
+    this.scrollTo(0)
   }
 
   private drawLineAt(x: number) {
@@ -39,9 +41,39 @@ export default class ScrollingCanvas extends Vue {
     this.context.stroke()
   }
   // eslint-disable-next-line no-unused-vars
-  scrollTo(x: number) {
-     this.context.drawImage(this.image, -x + 500, -this.height / 2);
-     this.drawLineAt(500);
+  async scrollTo(x: number) {
+    let first_image_to_show = Math.floor(x / this.tile_width)
+    let last_image_to_show = Math.floor((x + this.context.canvas.width) / this.tile_width)
+    console.log('scrollTo', x)
+    console.log(first_image_to_show, last_image_to_show)
+    for (let i = 0; i < first_image_to_show; ++i) {
+      this.images[i] = null;
+    }
+    for (let i = first_image_to_show; i <= last_image_to_show; ++i) {
+      if (this.images[i] == null) {
+        this.images[i] = await this.getImage(i)
+      }
+    }
+    this.context.drawImage(this.images[first_image_to_show]!,
+        -(x % this.tile_width) + this.width / 2, -this.tile_height / 2);
+    for (let i = first_image_to_show + 1; i <= last_image_to_show; ++i) {
+      this.context.drawImage(this.images[i]!,
+          -(x % this.tile_width) + (i * this.tile_width) + this.width / 2,
+          -this.tile_height / 2);
+    }
+     //this.context.drawImage(this.image, -x + 500, - this.height / 2);
+     this.drawLineAt(this.width / 2);
+  }
+
+  private async getImage(x: number) {
+    console.log("loading tile", x);
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      let img = new Image()
+      img.onload = () => {resolve(img)}
+      img.onerror = reject
+      img.src = this.image_url_base + x + '.png'
+    })
+
   }
 }
 </script>
