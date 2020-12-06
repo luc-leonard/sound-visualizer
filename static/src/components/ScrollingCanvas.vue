@@ -36,7 +36,7 @@ export default class ScrollingCanvas extends Vue {
 
   private drawLineAt(x: number) {
     this.context.moveTo(x, 0)
-    this.context.lineTo(x, 2000)
+    this.context.lineTo(x, this.height)
     this.context.strokeStyle = 'red';
     this.context.stroke()
   }
@@ -44,8 +44,6 @@ export default class ScrollingCanvas extends Vue {
   async scrollTo(x: number) {
     let first_image_to_show = Math.floor(x / this.tile_width)
     let last_image_to_show = Math.floor((x + this.context.canvas.width) / this.tile_width)
-    console.log('scrollTo', x)
-    console.log(first_image_to_show, last_image_to_show)
     for (let i = 0; i < first_image_to_show; ++i) {
       this.images[i] = null;
     }
@@ -55,11 +53,10 @@ export default class ScrollingCanvas extends Vue {
       }
     }
     this.context.drawImage(this.images[first_image_to_show]!,
-        -(x % this.tile_width) + this.width / 2, -this.tile_height / 2);
+        -(x % this.tile_width) + this.width / 2, 0);
     for (let i = first_image_to_show + 1; i <= last_image_to_show; ++i) {
       this.context.drawImage(this.images[i]!,
-          -(x % this.tile_width) + (i * this.tile_width) + this.width / 2,
-          -this.tile_height / 2);
+          -(x % this.tile_width) + (i * this.tile_width) + this.width / 2, 0);
     }
      //this.context.drawImage(this.image, -x + 500, - this.height / 2);
      this.drawLineAt(this.width / 2);

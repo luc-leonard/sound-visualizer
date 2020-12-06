@@ -44,14 +44,14 @@ export default class SpectralAlaysisFlowListElement extends Vue {
     })
   }
 
-  update_position() {
+  async update_position() {
     if (this.pixel_per_sec == -1) {
       this.player().getDuration().then((duration: number) => {
         this.pixel_per_sec =  this.element.result.width / duration;
       });
     }
 
-    this.player().getCurrentTime().then((current_time: any) => {
+    await this.player().getCurrentTime().then((current_time: any) => {
       let spectro: VueOpenSeaDragon = this.$refs.spectro as VueOpenSeaDragon;
       this.current_position = current_time;
       spectro.scrollTo(current_time * this.pixel_per_sec + 10);
