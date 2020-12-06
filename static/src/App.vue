@@ -15,8 +15,9 @@ import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
 Vue.mixin({
   data() {
     return {
+     get API_BASE_URL() { return 'https://sound-visualizer-staging.herokuapp.com'}
      //get API_BASE_URL() { return 'https://luc-leonard-sound-visualizer.herokuapp.com'}
-     get API_BASE_URL() { return 'http://localhost:5000'}
+     //get API_BASE_URL() { return 'http://localhost:5000'}
     }
   }
 })
