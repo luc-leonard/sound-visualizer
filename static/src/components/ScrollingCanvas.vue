@@ -46,9 +46,7 @@ export default class ScrollingCanvas extends Vue {
   async scrollTo(x: number) {
     let first_image_to_show = Math.floor(x / this.tile_width)
     let last_image_to_show = Math.floor((x + this.context.canvas.width) / this.tile_width)
-    // for (let i = 0; i < first_image_to_show; ++i) {
-    //   this.images[i] = null;
-    // }
+
     for (let i = first_image_to_show; i <= last_image_to_show; ++i) {
       if (this.images[i] == null && !this.loadingImages.has(i)) {
         this.loadingImages.set(i, false);
@@ -66,7 +64,6 @@ export default class ScrollingCanvas extends Vue {
              -(x % this.tile_width) + (i * this.tile_width) + this.width / 2, 0);
        }
     }
-     //this.context.drawImage(this.image, -x + 500, - this.height / 2);
      this.drawLineAt(this.width / 2);
   }
 
