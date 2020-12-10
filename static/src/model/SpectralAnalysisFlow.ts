@@ -1,8 +1,6 @@
 export class SpectralAnalysisParameters {
     constructor(
         public youtube_url: string,
-        public  start_second: number,
-        public length_second: number,
         public overlap_factor: number,
         public frame_size_power: number) {
     }
@@ -11,6 +9,7 @@ export class SpectralAnalysisParameters {
 export class SpectralAnalysisResult {
     constructor(
         public width: number,
+        public tile_width: number,
         public height: number
     ) {
     }
@@ -24,7 +23,6 @@ export class SpectralAnalysisFlow {
         public memory_used: Map<string, number>,
         public status: string,
         public result: SpectralAnalysisResult,
-        public tile: SpectralAnalysisResult
     ) {
     }
 }

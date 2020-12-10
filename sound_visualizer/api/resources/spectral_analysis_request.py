@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restful import Resource
+from flask_restful import Resource, abort
 
 from sound_visualizer.app.spectral_analysis_request_handler import SpectralAnalysisRequestHandler
 from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
@@ -23,8 +23,7 @@ def SpectralAnalysisRequestListResource(handler: SpectralAnalysisRequestHandler)
         def post(self) -> dict:
             logger.info(f'received request {request.json}')
             params = SpectralAnalysisParameters(**request.json)
-            self.handler.handle_new_request(params)
-            return params.dict()
+            return self.handler.handle_new_request(params).dict()
 
     return SpectralAnalysisListResourceImpl
 
@@ -35,6 +34,9 @@ def SpectralAnalysisRequestResource(handler: SpectralAnalysisRequestHandler):
             self.handler = handler
 
         def get(self, analysis_id: str) -> dict:
-            return self.handler.get_request_by_id(analysis_id).dict()
+            data = self.handler.get_request_by_id(analysis_id)
+            if data is None:
+                return abort(404)
+            return data.dict()
 
     return SpectralAnalysisResourceImpl

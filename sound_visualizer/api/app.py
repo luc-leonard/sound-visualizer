@@ -4,7 +4,6 @@ import pymongo
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
-from flask_restful.utils.cors import crossdomain
 
 from sound_visualizer.api.resources.spectral_analysis_request import (
     SpectralAnalysisRequestListResource,
@@ -42,7 +41,7 @@ def create_app(name):
     api = Api(app)
     if app.the_config.cors_origin is not None:
         CORS(app, resources={r"/*": {"origins": app.the_config.cors_origin}})
-        api.decorators = [crossdomain(origin=app.the_config.cors_origin)]
+
     handler = SpectralAnalysisRequestHandler(app.orm, app.publisher, app.storage)
 
     api.add_resource(
@@ -64,3 +63,12 @@ def create_app(name):
 
 init_logger()
 app = create_app(__name__)
+
+
+@app.after_request
+def add_headers(response):
+    logger.info(response)
+    for hdr_name in list(response.headers.keys()):
+        if hdr_name.startswith('Access-Control-'):
+            response.headers.remove(hdr_name)
+    return response

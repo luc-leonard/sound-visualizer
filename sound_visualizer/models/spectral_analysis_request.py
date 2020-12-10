@@ -9,8 +9,9 @@ _COLLECTION_NAME = 'spectral-analysis'
 
 
 class SpectralAnalysisResult(BaseModel):
-    width: int
-    height: int
+    width: Optional[int]
+    tile_width: Optional[int]
+    height: Optional[int]
 
 
 class SpectralAnalysisFlow(BaseModel):
@@ -23,7 +24,6 @@ class SpectralAnalysisFlow(BaseModel):
     # really an enum but pymongo complains :(
     status: str
     result: Optional[SpectralAnalysisResult]
-    tile: Optional[SpectralAnalysisResult]
 
 
 class SpectralAnalysisFlowORM:
@@ -44,8 +44,11 @@ class SpectralAnalysisFlowORM:
     def add_memory_used(self, request_id, name, value):
         self._collection.update_one({'id': request_id}, {'$set': {f'memory_used.{name}': value}})
 
-    def load_request_by_id(self, request_id) -> SpectralAnalysisFlow:
-        return SpectralAnalysisFlow(**self._collection.find_one({'id': request_id}))
+    def load_request_by_id(self, request_id) -> Optional[SpectralAnalysisFlow]:
+        data = self._collection.find_one({'id': request_id})
+        if data is None:
+            return None
+        return SpectralAnalysisFlow(**data)
 
     def load_all_requests(self, offset: int = 0, len: int = -1) -> List[SpectralAnalysisFlow]:
         cursor = self._collection.find().sort('_id', pymongo.DESCENDING)
@@ -60,10 +63,8 @@ class SpectralAnalysisFlowORM:
         return self._collection.find(*args, **kwargs)
 
     def save_tile_size(self, id, size):
-        self._collection.update_one({'id': id, 'tile': None}, {'$set': {'tile': {}}})
-        self._collection.update_one(
-            {'id': id}, {'$set': {'tile.width': size[0], 'tile.height': size[1]}}
-        )
+        self._collection.update_one({'id': id, 'result': None}, {'$set': {'result': {}}})
+        self._collection.update_one({'id': id}, {'$set': {'result.tile_width': size}})
 
     def save_image_size(self, id, size):
         self._collection.update_one({'id': id, 'result': None}, {'$set': {'result': {}}})

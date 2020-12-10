@@ -1,5 +1,7 @@
-from typing import List
-from uuid import uuid4
+import logging
+from typing import List, Optional
+
+from _sha3 import sha3_512
 
 from sound_visualizer.app.message_queue.message_queue import MessageQueuePublisher
 from sound_visualizer.app.storage.storage import Storage
@@ -8,6 +10,8 @@ from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,
     SpectralAnalysisFlowORM,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SpectralAnalysisRequestHandler:
@@ -24,14 +28,25 @@ class SpectralAnalysisRequestHandler:
     def get_all_requests(self, offset: int, length: int) -> List[SpectralAnalysisFlow]:
         return self.orm.load_all_requests(offset, length)
 
-    def get_request_by_id(self, id: str) -> SpectralAnalysisFlow:
+    def get_request_by_id(self, id: str) -> Optional[SpectralAnalysisFlow]:
         return self.orm.load_request_by_id(id)
 
     def handle_new_request(self, parameters: SpectralAnalysisParameters) -> SpectralAnalysisFlow:
+        id = sha3_512(
+            f'{parameters.youtube_url}'
+            f'_{parameters.frame_size_power}_'
+            f'{parameters.overlap_factor}'.encode('utf-8')
+        ).hexdigest()
+
         spectral_request = SpectralAnalysisFlow(
-            id='result_' + str(uuid4()),
+            id='result_' + id,
             parameters=parameters,
             status='requested',
         )
-        self.message_publisher.publish('my-topic', spectral_request.json().encode("utf-8"))
+
+        if self.orm.load_request_by_id(spectral_request.id) is None:
+            self.orm.save_request(spectral_request)
+            self.message_publisher.publish('my-topic', spectral_request.json().encode("utf-8"))
+        else:
+            logger.info('already computed...')
         return spectral_request
