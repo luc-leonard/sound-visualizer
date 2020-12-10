@@ -42,7 +42,9 @@ def test_spectral_analyser(mocker: MockerFixture, sample_rate, frequency):
         SoundReader(filename='', start=0, length=-1)
     )
 
-    assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 1
+    assert (
+        abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data.__next__()[0])]) <= 1
+    )
 
 
 def test_spectral_analyser_high_cut(mocker: MockerFixture, sample_rate, frequency):

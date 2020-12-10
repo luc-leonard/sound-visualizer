@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Generator
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -11,37 +11,39 @@ from sound_visualizer.utils.size import np_get_real_size
 logger = logging.getLogger(__name__)
 
 
-class SpectralAnalysis(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+class SpectralAnalysis:
+    def __init__(self, time_domain, frequency_domain, fft_data):
+        self.time_domain = time_domain
+        self.frequency_domain = frequency_domain
+        self.fft_data = fft_data
 
     time_domain: np.ndarray
     frequency_domain: np.ndarray
-    fft_data: np.ndarray
+    fft_data: Generator[np.ndarray, None, None]
 
-    def high_cut(self, cut_frequency: int) -> 'SpectralAnalysis':
-        cut_idx = np.searchsorted(self.frequency_domain, cut_frequency)
-        filtered_fft = self.fft_data[:, 0:cut_idx]
-        new_frequency_domain = np.linspace(
-            self.frequency_domain[0], cut_frequency, filtered_fft.shape[1]
-        )
-        return SpectralAnalysis(
-            time_domain=self.time_domain,
-            frequency_domain=new_frequency_domain,
-            fft_data=filtered_fft,
-        )
-
-    def low_cut(self, cut_frequency: int) -> 'SpectralAnalysis':
-        cut_idx = np.searchsorted(self.frequency_domain, cut_frequency)
-        filtered_fft = self.fft_data[:, cut_idx : self.fft_data.shape[1] - 1]
-        new_frequency_domain = np.linspace(
-            cut_frequency, self.frequency_domain[-1], filtered_fft.shape[1]
-        )
-        return SpectralAnalysis(
-            time_domain=self.time_domain,
-            frequency_domain=new_frequency_domain,
-            fft_data=filtered_fft,
-        )
+    # def high_cut(self, cut_frequency: int) -> 'SpectralAnalysis':
+    #     cut_idx = np.searchsorted(self.frequency_domain, cut_frequency)
+    #     filtered_fft = self.fft_data[:, 0:cut_idx]
+    #     new_frequency_domain = np.linspace(
+    #         self.frequency_domain[0], cut_frequency, cut_idx
+    #     )
+    #     return SpectralAnalysis(
+    #         time_domain=self.time_domain,
+    #         frequency_domain=new_frequency_domain,
+    #         fft_data=filtered_fft,
+    #     )
+    #
+    # def low_cut(self, cut_frequency: int) -> 'SpectralAnalysis':
+    #     cut_idx = np.searchsorted(self.frequency_domain, cut_frequency)
+    #    # filtered_fft = self.fft_data[:, cut_idx : self.fft_data.shape[1] - 1]
+    #     new_frequency_domain = np.linspace(
+    #         cut_frequency, self.frequency_domain[-1], filtered_fft.shape[1]
+    #     )
+    #     return SpectralAnalysis(
+    #         time_domain=self.time_domain,
+    #         frequency_domain=new_frequency_domain,
+    #         fft_data=filtered_fft,
+    #     )
 
 
 class SpectralAnalyzer(BaseModel):
@@ -54,13 +56,30 @@ class SpectralAnalyzer(BaseModel):
             sound.data, frame_size=self.frame_size, overlap_factor=self.overlap_factor
         )
         return SpectralAnalysis(
-            time_domain=np.linspace(0, sound.length, fft_data.shape[0]),
-            frequency_domain=np.linspace(0, sound.sample_rate / 2.0, fft_data.shape[1]),
+            time_domain=get_time_domain(sound.data, self.frame_size, self.overlap_factor),
+            frequency_domain=np.linspace(
+                0, sound.sample_rate / 2.0, int(np.ceil(self.frame_size / 2.0))
+            ),
             fft_data=fft_data,
         )
 
 
-def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float) -> np.ndarray:
+def get_hop_size(frame_size, overlap_factor):
+    hop_size = int(int(frame_size - np.floor(overlap_factor * frame_size)) / 2)
+    return hop_size
+
+
+def get_time_domain(data: np.ndarray, frame_size: int, overlap_factor: float) -> np.ndarray:
+    hop_size = int(int(frame_size - np.floor(overlap_factor * frame_size)) / 2)
+    logger.info(f'hop zise = {hop_size}')
+    samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
+    cols = np.ceil((len(samples) - frame_size) / float(hop_size)) + 1
+    return cols
+
+
+def get_spectogram_data(
+    data: np.ndarray, frame_size: int, overlap_factor: float
+) -> Generator[np.ndarray, None, None]:
     """
     :param data: the raw audio data
     :param frame_size:  the size of a frame. should be a power of 2 such as 2**12
@@ -70,11 +89,11 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
     """
     from numpy.lib import stride_tricks
 
-    # hop_size = 20
-    hop_size = int(int(frame_size - np.floor(overlap_factor * frame_size)) / 2)
+    hop_size = get_hop_size(frame_size, overlap_factor)
     logger.info(f'hop zise = {hop_size}')
     samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
     cols = np.ceil((len(samples) - frame_size) / float(hop_size)) + 1
+    print("cols ", cols)
     samples = np.append(samples, np.zeros(frame_size))
 
     # first, we create overlapping windows (in the sql sense) with as_strided.
@@ -94,7 +113,6 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
     chunked_frames = np.array_split(frames, nb_chunks)
     window_fn = np.hamming(frame_size)
 
-    full_fft_data: Optional[np.ndarray] = None
     for frame in chunked_frames:
         # we apply a 'window' (in the mathematical sense) function. its purpose is to make sure our lines are smooth
         # since it alter a frame, and frames are view that overlap, we need to copy data first
@@ -102,12 +120,4 @@ def get_spectogram_data(data: np.ndarray, frame_size: int, overlap_factor: float
         logger.info(f'chunk size: {convert_size(np_get_real_size(local_frame))}')
         local_frame *= window_fn
         frame_fft_data = 10 * np.log(10) * np.abs(np.fft.rfft(local_frame))
-        if full_fft_data is not None:
-            full_fft_data = np.vstack([full_fft_data, frame_fft_data])
-        else:
-            full_fft_data = frame_fft_data
-    assert full_fft_data is not None
-    logger.info(
-        f' fulll fft data. shape: {full_fft_data.shape}, size: {convert_size(full_fft_data.nbytes)}'
-    )
-    return full_fft_data
+        yield frame_fft_data
