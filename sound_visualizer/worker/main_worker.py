@@ -82,11 +82,7 @@ def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, 
     logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
     orm.update_request_status(request.id, 'analysing')
 
-    sound_reader = SoundReader(
-        filename=wav_filename,
-        start_second=request.parameters.start_second,
-        length_second=request.parameters.length_second,
-    )
+    sound_reader = SoundReader(filename=wav_filename)
     spectral_analyser = SpectralAnalyzer(
         frame_size=2 ** request.parameters.frame_size_power,
         overlap_factor=request.parameters.overlap_factor,
@@ -116,7 +112,7 @@ def callback(message):
             height = image.height
             width += image.width
             if idx == 0:
-                orm.save_tile_size(request.id, (image.width, image.height))
+                orm.save_tile_size(request.id, image.width)
             with io.BytesIO() as bytes:
                 image.save(bytes, format='png')
                 bytes.seek(0)

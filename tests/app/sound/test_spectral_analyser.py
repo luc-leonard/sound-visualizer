@@ -23,7 +23,7 @@ def test_should_compute_fft(frequency: int):
         generate_sound(frequency=frequency, duration_second=4, sample_rate=44100),
         frame_size=2 ** 15,
         overlap_factor=0.9,
-    )
+    ).__next__()
     frequency_space = np.linspace(0, 44100 / 2.0, fft_data.shape[1])
 
     # We compare the pure sin frequency to the highest Fourier factor.
@@ -61,7 +61,9 @@ def test_spectral_analyser_high_cut(mocker: MockerFixture, sample_rate, frequenc
         .high_cut(frequency + 100)
     )
 
-    assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
+    assert (
+        abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data.__next__()[0])]) <= 2
+    )
     # there should be NOTHING above frequency cut
     assert analysis.frequency_domain[-1] < frequency + 100 + 1
 
@@ -80,7 +82,9 @@ def test_spectral_analyser_low_cut(mocker: MockerFixture, sample_rate, frequency
         .low_cut(frequency - 100)
     )
 
-    assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
+    assert (
+        abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data.__next__()[0])]) <= 2
+    )
     # there should be NOTHING above frequency cut
     assert analysis.frequency_domain[0] > frequency - 100 - 1
 
@@ -100,5 +104,7 @@ def test_spectral_analyser_low_cut_and_high_cut(mocker: MockerFixture, sample_ra
         .low_cut(frequency - 100)
     )
 
-    assert abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data[0])]) <= 2
+    assert (
+        abs(frequency - analysis.frequency_domain[np.argmax(analysis.fft_data.__next__()[0])]) <= 2
+    )
     # there should be NOTHING above frequency cut
