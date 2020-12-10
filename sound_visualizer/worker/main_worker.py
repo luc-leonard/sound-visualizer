@@ -93,12 +93,12 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
     with stopwatch:
         spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
     orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
-    orm.add_memory_used(request.id, 'fft_data', spectral_analysis.fft_data.nbytes)
+    # orm.add_memory_used(request.id, 'fft_data', spectral_analysis.fft_data.nbytes)
     orm.update_request_status(request.id, 'generating image...')
     logger.info(f'generated fft data {spectral_analysis}')
     with stopwatch:
         image = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
-            spectral_analysis.fft_data
+            spectral_analysis
         )
 
         ImageFont.load_default()
