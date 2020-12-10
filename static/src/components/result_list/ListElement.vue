@@ -5,7 +5,7 @@
     <ScrollingCanvas :image_url="make_url(API_BASE_URL)"
                       width="2000"
                       :height="element.result.height"
-                     tile_width="5000"
+                     :tile_width="element.tile.width"
                      :tile_height="element.result.height"
                      class="image_container"
                      :image_url_base="make_url(API_BASE_URL)"

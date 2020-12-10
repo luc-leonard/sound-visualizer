@@ -23,6 +23,7 @@ class SpectralAnalysisFlow(BaseModel):
     # really an enum but pymongo complains :(
     status: str
     result: Optional[SpectralAnalysisResult]
+    tile: Optional[SpectralAnalysisResult]
 
 
 class SpectralAnalysisFlowORM:
@@ -57,6 +58,12 @@ class SpectralAnalysisFlowORM:
 
     def find(self, *args, **kwargs):
         return self._collection.find(*args, **kwargs)
+
+    def save_tile_size(self, id, size):
+        self._collection.update_one({'id': id, 'tile': None}, {'$set': {'tile': {}}})
+        self._collection.update_one(
+            {'id': id}, {'$set': {'tile.width': size[0], 'tile.height': size[1]}}
+        )
 
     def save_image_size(self, id, size):
         self._collection.update_one({'id': id, 'result': None}, {'$set': {'result': {}}})

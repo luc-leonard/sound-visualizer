@@ -23,7 +23,8 @@ export class SpectralAnalysisFlow {
         public stopwatches: Map<string, number>,
         public memory_used: Map<string, number>,
         public status: string,
-        public result: SpectralAnalysisResult
+        public result: SpectralAnalysisResult,
+        public tile: SpectralAnalysisResult
     ) {
     }
 }

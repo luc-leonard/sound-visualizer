@@ -56,7 +56,11 @@ class SpectralAnalyzer(BaseModel):
             sound.data, frame_size=self.frame_size, overlap_factor=self.overlap_factor
         )
         return SpectralAnalysis(
-            time_domain=get_time_domain(sound.data, self.frame_size, self.overlap_factor),
+            time_domain=np.linspace(
+                0,
+                sound.length,
+                get_time_domain_shape(sound.data, self.frame_size, self.overlap_factor),
+            ),
             frequency_domain=np.linspace(
                 0, sound.sample_rate / 2.0, int(np.ceil(self.frame_size / 2.0))
             ),
@@ -66,15 +70,15 @@ class SpectralAnalyzer(BaseModel):
 
 def get_hop_size(frame_size, overlap_factor):
     hop_size = int(int(frame_size - np.floor(overlap_factor * frame_size)) / 2)
-    return hop_size
+    return int(hop_size)
 
 
-def get_time_domain(data: np.ndarray, frame_size: int, overlap_factor: float) -> np.ndarray:
+def get_time_domain_shape(data: np.ndarray, frame_size: int, overlap_factor: float) -> int:
     hop_size = int(int(frame_size - np.floor(overlap_factor * frame_size)) / 2)
     logger.info(f'hop zise = {hop_size}')
     samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
     cols = np.ceil((len(samples) - frame_size) / float(hop_size)) + 1
-    return cols
+    return int(cols)
 
 
 def get_spectogram_data(
@@ -93,7 +97,7 @@ def get_spectogram_data(
     logger.info(f'hop zise = {hop_size}')
     samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
     cols = np.ceil((len(samples) - frame_size) / float(hop_size)) + 1
-    print("cols ", cols)
+    logger.info(f"cols =  {cols}")
     samples = np.append(samples, np.zeros(frame_size))
 
     # first, we create overlapping windows (in the sql sense) with as_strided.
