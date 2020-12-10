@@ -2,11 +2,12 @@ import io
 import json
 import logging
 import random
+from typing import Generator
 
 import numpy as np
 import PIL
 import pymongo
-from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+from PIL import Image
 
 from sound_visualizer.app.converter import Mp3Converter
 from sound_visualizer.app.downloader.youtube import YoutubeDownloader
@@ -48,7 +49,7 @@ def vstack(images):
     return stacked
 
 
-def toLogScale(image: PIL.Image, frequency_domain: np.ndarray) -> PIL.Image:
+def toLogScale(image: PIL.Image, frequency_domain: np.ndarray) -> PIL.Image.Image:
     cut_offs = [0, 5000, 15000, 100000]
     idx_cutoffs = [frequency_domain.searchsorted(frequency) for frequency in cut_offs]
 
@@ -62,7 +63,7 @@ def toLogScale(image: PIL.Image, frequency_domain: np.ndarray) -> PIL.Image:
     return vstack(list(reversed(images)))
 
 
-def generate_image(request: SpectralAnalysisFlow) -> Image:
+def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, None, None]:
     stopwatch = StopWatch()
     orm.update_request_status(request.id, 'downloading')
     if request.parameters.youtube_url is not None and len(request.parameters.youtube_url) == 0:
@@ -93,56 +94,38 @@ def generate_image(request: SpectralAnalysisFlow) -> Image:
     with stopwatch:
         spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
     orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
-    # orm.add_memory_used(request.id, 'fft_data', spectral_analysis.fft_data.nbytes)
     orm.update_request_status(request.id, 'generating image...')
     logger.info(f'generated fft data {spectral_analysis}')
-    with stopwatch:
-        image = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
-            spectral_analysis
-        )
-
-        ImageFont.load_default()
-        draw = ImageDraw.Draw(image)
-        for i in range(0, int(np.floor(spectral_analysis.time_domain[-1])), 1):
-            second_idx = spectral_analysis.time_domain.searchsorted(i)
-            draw.line([(0, second_idx), (15, second_idx)], fill='red', width=1)
-            if i % 5 == 0:
-                draw.text(xy=(0, second_idx + 16), text=f'{i}', fill='red')
-
-        for j in [10, 100, 1000, 10000]:
-            frequency_idx = spectral_analysis.frequency_domain.searchsorted(j)
-            draw.line(
-                [(frequency_idx + 15, 0), (frequency_idx + 15, image.size[1])], fill='red', width=1
-            )
-
-        image = ImageEnhance.Contrast(image).enhance(5.0)
-        image = image.rotate(90, expand=True)
-        image = toLogScale(image, spectral_analysis.frequency_domain)
+    images = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
+        spectral_analysis
+    )
     orm.add_stopwatch(request.id, 'image generation', stopwatch.interval)
-    return image
+    return images
 
 
 def callback(message):
+    message.ack()
     try:
         data = json.loads(message.data)
         request = SpectralAnalysisFlow(**data)
         logger.info(f'request = {request}')
         orm.update_request_status(request.id, 'beginning')
-        image = generate_image(request)
-        orm.save_image_size(request.id, image.size)
-        with io.BytesIO() as bytes:
-            image.save(bytes, format='png')
-            bytes.seek(0)
-            orm.update_request_status(request.id, 'uploading image')
-            storage.upload_from(request.id, bytes)
-            orm.update_request_status(request.id, 'finished')
-            db.results.insert_one({'source': request.dict(), 'result': request.id})
-        message.ack()
+        images = generate_image(request)
+        width = 0
+        for (idx, image) in enumerate(images):
+            height = image.height
+            width += image.width
+            if idx == 0:
+                orm.save_tile_size(request.id, (image.width, image.height))
+            with io.BytesIO() as bytes:
+                image.save(bytes, format='png')
+                bytes.seek(0)
+                orm.update_request_status(request.id, f'uploading image {idx}')
+                storage.upload_from(f'{request.id}_{idx}', bytes)
+        orm.update_request_status(request.id, 'finished')
+        orm.save_image_size(request.id, (width, height))
     except Exception as e:
         logger.error('error handling message', exc_info=e)
-        message.ack()
-    finally:
-        message.ack()
 
 
 config = config_from_env()
