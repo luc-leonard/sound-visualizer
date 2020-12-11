@@ -44,7 +44,8 @@ class SpectralAnalysisRequestHandler:
             status='requested',
         )
 
-        if self.orm.load_request_by_id(spectral_request.id) is None:
+        maybe_existing_request = self.orm.load_request_by_id(spectral_request.id)
+        if maybe_existing_request is None or maybe_existing_request.status != 'finished':
             self.orm.save_request(spectral_request)
             self.message_publisher.publish('my-topic', spectral_request.json().encode("utf-8"))
         else:

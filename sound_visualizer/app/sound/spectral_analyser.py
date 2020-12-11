@@ -53,7 +53,10 @@ class SpectralAnalyzer(BaseModel):
     def get_spectrogram_data(self, sound_reader: SoundReader) -> SpectralAnalysis:
         sound = sound_reader.get_data()
         fft_data = get_spectogram_data(
-            sound.data, frame_size=self.frame_size, overlap_factor=self.overlap_factor
+            sound.data,
+            sound.sample_rate,
+            frame_size=self.frame_size,
+            overlap_factor=self.overlap_factor,
         )
         return SpectralAnalysis(
             time_domain=np.linspace(
@@ -82,7 +85,7 @@ def get_time_domain_shape(data: np.ndarray, frame_size: int, overlap_factor: flo
 
 
 def get_spectogram_data(
-    data: np.ndarray, frame_size: int, overlap_factor: float
+    data: np.ndarray, sample_rate: int, frame_size: int, overlap_factor: float
 ) -> Generator[np.ndarray, None, None]:
     """
     :param data: the raw audio data
@@ -97,18 +100,21 @@ def get_spectogram_data(
     logger.info(f'hop zise = {hop_size}')
     samples = np.append(np.zeros(int(np.floor(frame_size / 2.0))), data)
     cols = np.ceil((len(samples) - frame_size) / float(hop_size)) + 1
-    logger.info(f"cols =  {cols}")
+    logger.info(f"data =  {convert_size(np_get_real_size(samples))}")
     samples = np.append(samples, np.zeros(frame_size))
 
+    logger.info(f'raw audio size = {convert_size(np_get_real_size(samples))}')
     # first, we create overlapping windows (in the sql sense) with as_strided.
     # since those are views on the original array, it costs almost nothing in memory
     frames = stride_tricks.as_strided(
         samples,
         shape=(int(cols), frame_size),
         strides=(samples.strides[0] * hop_size, samples.strides[0]),
+        writeable=False,
     )
     # todo: either make this configurable, or find an heuristic to get the optimal value
-    nb_chunks = 10
+    duration_in_seconds = data.shape[0] / sample_rate
+    nb_chunks = np.ceil(duration_in_seconds / 60)  # 1 minute chunk
     logger.info(
         f"the fft will be computed on {nb_chunks} chunks. size in memory {convert_size(np_get_real_size(frames))} "
         f"(would use {convert_size(frames.nbytes)} without strides"

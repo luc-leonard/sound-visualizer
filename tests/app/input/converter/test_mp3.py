@@ -25,8 +25,12 @@ def test_should_convert_mp3(datadir):
         SoundReader(filename=f'{datadir}/re_mi.wav')
     )
     assert (
-        analysis_converted_mp3.frequency_domain[np.argmax(analysis_converted_mp3.fft_data[0])]
-        == analysis_origin_file.frequency_domain[np.argmax(analysis_origin_file.fft_data[0])]
+        analysis_converted_mp3.frequency_domain[
+            np.argmax(analysis_converted_mp3.fft_data.__next__()[0])
+        ]
+        == analysis_origin_file.frequency_domain[
+            np.argmax(analysis_origin_file.fft_data.__next__()[0])
+        ]
     )
     os.unlink(converted_file)
 

@@ -67,7 +67,6 @@ app = create_app(__name__)
 
 @app.after_request
 def add_headers(response):
-    logger.info(response)
     for hdr_name in list(response.headers.keys()):
         if hdr_name.startswith('Access-Control-'):
             response.headers.remove(hdr_name)
