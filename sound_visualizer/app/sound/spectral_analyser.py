@@ -88,6 +88,7 @@ def get_spectogram_data(
     data: np.ndarray, sample_rate: int, frame_size: int, overlap_factor: float
 ) -> Generator[np.ndarray, None, None]:
     """
+    :param sample_rate: the sample rate
     :param data: the raw audio data
     :param frame_size:  the size of a frame. should be a power of 2 such as 2**12
     :param overlap_factor: how much overlap will there be between each frame ? increases quality and data size. \

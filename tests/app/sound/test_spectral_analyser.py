@@ -21,6 +21,7 @@ def frequency() -> int:
 def test_should_compute_fft(frequency: int):
     fft_data = get_spectogram_data(
         generate_sound(frequency=frequency, duration_second=4, sample_rate=44100),
+        sample_rate=44100,
         frame_size=2 ** 15,
         overlap_factor=0.9,
     ).__next__()
