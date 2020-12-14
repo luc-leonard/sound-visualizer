@@ -52,6 +52,7 @@ export default class ScrollingCanvas extends Vue {
         this.getImage(i).then(image => {
           this.images[i] = image;
           this.loadingImages.set(i, true);
+          this.scrollTo(x);
         });
       }
     }

@@ -1,7 +1,7 @@
 <template>
   <ul>
     <li v-for="element in elementList" :key="element.id">
-      <ListElement :element="element"></ListElement>
+      <SingleElementDetail :element="element"></SingleElementDetail>
     </li>
   </ul>
 </template>
@@ -10,9 +10,9 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
-import ListElement from "@/components/result_list/ListElement.vue";
+import SingleElementDetail from "@/components/SingleElementDetail.vue";
 @Component({
-  components: {ListElement}
+  components: {SingleElementDetail}
 })
 export default class SpectralAlaysisFlowListElement extends Vue {
   @Prop({required: true})

@@ -1,10 +1,24 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <input type="text" id="youtube_url" v-model="value"/>
+    <div class="input-group">
+      <span class="input-group-addon" id="basic-addon1">URL</span>
+      <input type="text" class="form-control" v-model="value"/>
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" id="basic-addon1">frame size</span>
+      <input class="form-control" v-model="frame_size"/>
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" id="basic-addon1">overlap factor</span>
+      <input class="form-control" v-model="overlap_factor"/>
+    </div>
     <button @click="compute"> COMPUTE</button>
-    <br />
-    <textarea v-model="compute_result"></textarea>
+
+    <div class="well">{{compute_result}}</div>
+    <div v-if="info[0] != null">
+      <SingleElementDetail :element="info[0]"></SingleElementDetail>
+    </div>
     <SpectralAnalysisFlowList :element-list="info"></SpectralAnalysisFlowList>
   </div>
 </template>
@@ -13,9 +27,10 @@
 
 import Axios from "axios";
 import {Component, Vue} from 'vue-property-decorator';
-import SpectralAnalysisFlowList from "@/components/result_list/SpectralAnalysisFlowList.vue";
+import SingleElementDetail from "@/components/SingleElementDetail.vue";
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
+import SpectralAnalysisFlowList from "@/components/result_list/SpectralAnalysisFlowList.vue";
 
 Vue.mixin({
   data() {
@@ -33,21 +48,24 @@ Vue.mixin({
 @Component({
   components: {
     SpectralAnalysisFlowList,
+    SingleElementDetail,
   },
 })
 
 export default class App extends Vue {
-  info: Array<SpectralAnalysisFlow> = [];
-  value: String = "test"
+  info: Array<SpectralAnalysisFlow> = []
+  value: String = "https://youtu.be/ZS8o9EpwUHg"
   compute_result: String = "";
   current_result_id: String = "";
+  frame_size: Number = 12;
+  overlap_factor: Number = 0.9;
 
   compute() {
     Axios
         .post(this.$data.API_BASE_URL + '/requests/', {
           'youtube_url': this.value,
-          'frame_size_power': 12,
-          'overlap_factor': 0.9
+          'frame_size_power': this.frame_size,
+          'overlap_factor': this.overlap_factor
         })
         .then(response => {
               this.current_result_id = response.data.id;
@@ -71,11 +89,10 @@ export default class App extends Vue {
   }
 
   mounted() {
-
     Axios
-        .get(this.$data.API_BASE_URL + '/requests/?length=1')
+        .get(this.$data.API_BASE_URL + '/requests/')
         .then(response => {
-              this.info = response.data
+              this.info = response.data;
             }
         )
 
