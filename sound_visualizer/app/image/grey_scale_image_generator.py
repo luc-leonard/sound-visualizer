@@ -22,7 +22,6 @@ class GreyScaleImageGenerator(BaseModel):
     def create_image(
         self, spectral_analysis: SpectralAnalysis
     ) -> Generator[PIL.Image.Image, None, None]:
-        pixel_per_second = spectral_analysis.time_domain.searchsorted(1)
         current_top = 0
         for frame in spectral_analysis.fft_data:
             image_data = np.floor((frame / (frame.max() / 255))).astype('uint8')
@@ -40,11 +39,14 @@ class GreyScaleImageGenerator(BaseModel):
 
             ImageFont.load_default()
             draw = ImageDraw.Draw(image)
-            begin_time_for_image = int(current_top / pixel_per_second)
-            end_time_for_image = int((current_top + image.height) / pixel_per_second)
-            logger.info(
-                f'begin_time = {begin_time_for_image}, end_time = {end_time_for_image}, pixel_per_sec = {pixel_per_second}'
-            )
+            begin_time_for_image = int(np.floor(spectral_analysis.time_domain[current_top]))
+            if current_top + image.height < len(spectral_analysis.time_domain):
+                end_time_for_image = int(
+                    np.ceil(spectral_analysis.time_domain[current_top + image.height])
+                )
+            else:
+                end_time_for_image = int(np.ceil(spectral_analysis.time_domain[-1]))
+            logger.info(f'begin_time = {begin_time_for_image}, end_time = {end_time_for_image}')
             for i in range(begin_time_for_image, end_time_for_image, 1):
                 second_idx = spectral_analysis.time_domain.searchsorted(i) - current_top
                 draw.line([(0, second_idx), (15, second_idx)], fill='red', width=1)
@@ -58,5 +60,5 @@ class GreyScaleImageGenerator(BaseModel):
                     fill='red',
                     width=1,
                 )
-            yield image.rotate(90, expand=True)
             current_top += image.height
+            yield image.rotate(90, expand=True)
