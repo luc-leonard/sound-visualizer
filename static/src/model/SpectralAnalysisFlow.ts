@@ -18,6 +18,7 @@ export class SpectralAnalysisResult {
 export class SpectralAnalysisFlow {
     constructor(
         public id: String,
+        public duration: number,
         public parameters: SpectralAnalysisParameters,
         public stopwatches: Map<string, number>,
         public memory_used: Map<string, number>,

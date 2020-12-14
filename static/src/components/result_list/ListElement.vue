@@ -7,10 +7,10 @@
              @paused="onPause"
              @playing="playing">
     </youtube>
-    <div>{{fps}}</div>
+    <div>{{ fps }}</div>
     <ScrollingCanvas :image_url="make_url(API_BASE_URL)"
-                      width="2000"
-                      :height="element.result.height / 2"
+                     width="2000"
+                     :height="element.result.height / 4"
                      :tile_width="element.result.tile_width"
                      :tile_height="element.result.height"
                      class="image_container"
@@ -38,7 +38,7 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   player_start_time: number = 0;
   current_time_when_starting_to_play = 0;
   current_position = 0;
-  pixel_per_sec = -1;
+  pixel_per_sec: GLint64 = -1;
   youtube_player!: any
   is_playing: boolean = false;
   spectro!: ScrollingCanvas;
@@ -46,6 +46,8 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   mounted() {
     this.spectro = this.$refs.spectro as ScrollingCanvas;
     this.current_position = 0;
+    // we multiply by 1000 because we want a fix point number to avoid propagating rounding errors.
+    this.pixel_per_sec = (this.element.result.width / this.element.duration) * 1000;
     requestAnimationFrame(this.update_position)
   }
 
@@ -54,7 +56,7 @@ export default class SpectralAlaysisFlowListElement extends Vue {
     this.is_playing = true;
     this.current_time_when_starting_to_play = performance.now();
     await this.player().getCurrentTime().then((current_time: any) => {
-      this.player_start_time = current_time;
+      this.player_start_time = current_time * 1000;
     })
   }
 
@@ -65,6 +67,7 @@ export default class SpectralAlaysisFlowListElement extends Vue {
 
   last_called_time = 0;
   fps: number = 0;
+
   async update_position(current_time: number) {
     let delta = (current_time - this.last_called_time) / 1000;
     this.last_called_time = current_time;
@@ -72,15 +75,9 @@ export default class SpectralAlaysisFlowListElement extends Vue {
 
     if (this.is_playing) {
       let elapsed_time = current_time - this.current_time_when_starting_to_play;
-
-      if (this.pixel_per_sec == -1) {
-        this.player().getDuration().then((duration: number) => {
-          this.pixel_per_sec = this.element.result.width / duration;
-        });
-      }
-      this.current_position = (((this.player_start_time + elapsed_time) / 1000) + this.player_start_time) * this.pixel_per_sec;
+      this.current_position = (elapsed_time + this.player_start_time) / 1000
     }
-    this.spectro.scrollTo(this.current_position);
+    this.spectro.scrollTo((this.current_position * (this.pixel_per_sec / 1000)));
     requestAnimationFrame(this.update_position)
   }
 
@@ -103,13 +100,14 @@ export default class SpectralAlaysisFlowListElement extends Vue {
 </script>
 
 <style module>
-.map{
+.map {
   height: 510px;
 }
 
 .player {
-  border:1px solid yellow;
+  border: 1px solid yellow;
 }
+
 .image_container {
   overflow: scroll;
   width: 95%;
