@@ -16,6 +16,7 @@ class SpectralAnalysisResult(BaseModel):
 
 class SpectralAnalysisFlow(BaseModel):
     id: str
+    duration: Optional[float]
     parameters: SpectralAnalysisParameters
     # how much time each step took ?
     stopwatches: Dict[str, float] = {}
@@ -40,6 +41,9 @@ class SpectralAnalysisFlowORM:
         self._collection.update_one(
             {'id': request_id}, {'$set': {f'stopwatches.{stopwatch_name}': time_spent}}
         )
+
+    def save_duration(self, request_id, duration):
+        self._collection.update_one({'id': request_id}, {'$set': {'duration': duration}})
 
     def add_memory_used(self, request_id, name, value):
         self._collection.update_one({'id': request_id}, {'$set': {f'memory_used.{name}': value}})
