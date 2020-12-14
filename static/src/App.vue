@@ -46,7 +46,7 @@ export default class App extends Vue {
     Axios
         .post(this.$data.API_BASE_URL + '/requests/', {
           'youtube_url': this.value,
-          'frame_size_power': 14,
+          'frame_size_power': 12,
           'overlap_factor': 0.9
         })
         .then(response => {
