@@ -1,8 +1,7 @@
 <template>
-    <div :class="$style.image_container">
-
-      <canvas ref="theCanvas" :class="$style.spectrogram"></canvas>
-    </div>
+  <div :class="$style.image_container">
+    <canvas ref="theCanvas" :class="$style.spectrogram"></canvas>
+  </div>
 </template>
 
 <script lang="ts">
@@ -21,18 +20,17 @@ export default class ScrollingCanvas extends Vue {
   @Prop({required: true})
   tile_height!: number;
 
-  images: Array<HTMLImageElement | null> = new Array<HTMLImageElement | null>();
+  images = new Array<HTMLImageElement | null>();
   context!: CanvasRenderingContext2D;
-  private loadingImages: Map<number, boolean> = new Map<number, boolean>();
+  private loadingImages = new Map<number, boolean>();
 
   mounted() {
-    console.log('loading image...')
-
-    let canvas = (this.$refs.theCanvas as any);
-    this.context = canvas.getContext('2d')
+    let canvas = this.$refs.theCanvas as any;
     canvas.width = this.width;
     canvas.height = this.height;
-    console.log(this)
+
+    this.context = canvas.getContext('2d')
+
     this.scrollTo(0)
   }
 
@@ -42,29 +40,27 @@ export default class ScrollingCanvas extends Vue {
     this.context.strokeStyle = 'red';
     this.context.stroke()
   }
+
   // eslint-disable-next-line no-unused-vars
-  async scrollTo(x: number) {
+  scrollTo(x: number) {
     let first_image_to_show = Math.floor(x / this.tile_width)
     let last_image_to_show = Math.floor((x + this.context.canvas.width) / this.tile_width)
 
     for (let i = first_image_to_show; i <= last_image_to_show; ++i) {
       if (this.images[i] == null && !this.loadingImages.has(i)) {
         this.loadingImages.set(i, false);
-        this.images[i] = await this.getImage(i)
-        this.loadingImages.set(i, true);
+        this.getImage(i).then(image => {
+          this.images[i] = image;
+          this.loadingImages.set(i, true);
+        });
       }
     }
-    if (this.loadingImages.get(first_image_to_show)) {
-      this.context.drawImage(this.images[first_image_to_show]!,
-          -(x % this.tile_width) + this.width / 2, 0);
+
+    if (this.loadingImages.get(first_image_to_show) == true) {
+        this.context.drawImage(this.images[first_image_to_show]!,
+          -(x % this.tile_width) + this.width / 2, this.height - this.tile_height);
     }
-    for (let i = first_image_to_show + 1; i <= last_image_to_show; ++i) {
-       if (this.loadingImages.get(i)) {
-         this.context.drawImage(this.images[i]!,
-             -(x % this.tile_width) + (i * this.tile_width) + this.width / 2, 0);
-       }
-    }
-     this.drawLineAt(this.width / 2);
+    this.drawLineAt(this.width / 2);
   }
 
 
@@ -72,7 +68,9 @@ export default class ScrollingCanvas extends Vue {
     console.log("loading tile", x);
     return new Promise<HTMLImageElement>((resolve, reject) => {
       let img = new Image()
-      img.onload = () => {resolve(img)}
+      img.onload = () => {
+        resolve(img)
+      }
       img.onerror = reject
       img.src = this.image_url_base + x + '.png'
     })
@@ -84,7 +82,6 @@ export default class ScrollingCanvas extends Vue {
 <style module>
 .image_container {
   border: 1px solid blue;
-  height: 1900px;
   width: 90%;
 }
 

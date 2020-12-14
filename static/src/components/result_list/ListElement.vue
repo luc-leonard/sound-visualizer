@@ -1,10 +1,16 @@
 <template>
   <div :class="$style.element">
-    <youtube :class="$style.player" :video-id="get_youtube_id()" ref="youtube" :player-vars="players_vars" @playing="playing">
+    <youtube :class="$style.player"
+             :video-id="get_youtube_id()"
+             ref="youtube"
+             :player-vars="players_vars"
+             @paused="onPause"
+             @playing="playing">
     </youtube>
+    <div>{{fps}}</div>
     <ScrollingCanvas :image_url="make_url(API_BASE_URL)"
                       width="2000"
-                      :height="element.result.height"
+                      :height="element.result.height / 2"
                      :tile_width="element.result.tile_width"
                      :tile_height="element.result.height"
                      class="image_container"
@@ -29,33 +35,53 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   @Prop({required: true})
   private element!: SpectralAnalysisFlow;
   players_vars = {origin: window.location}
-  current_position: number = 0;
+  player_start_time: number = 0;
+  current_time_when_starting_to_play = 0;
+  current_position = 0;
   pixel_per_sec = -1;
   youtube_player!: any
+  is_playing: boolean = false;
+  spectro!: ScrollingCanvas;
 
+  mounted() {
+    this.spectro = this.$refs.spectro as ScrollingCanvas;
+    this.current_position = 0;
+    requestAnimationFrame(this.update_position)
+  }
 
-  playing() {
-    console.log("START PLAYING")
-    this.$nextTick(function () {
-      //requestAnimationFrame(this.update_position);
-      window.setInterval(() => {
-        this.update_position();
-      }, 25);
+  async playing() {
+    console.log('play')
+    this.is_playing = true;
+    this.current_time_when_starting_to_play = performance.now();
+    await this.player().getCurrentTime().then((current_time: any) => {
+      this.player_start_time = current_time;
     })
   }
 
-  async update_position() {
-    if (this.pixel_per_sec == -1) {
-      this.player().getDuration().then((duration: number) => {
-        this.pixel_per_sec =  this.element.result.width / duration;
-      });
-    }
+  onPause() {
+    console.log('pause')
+    this.is_playing = false;
+  }
 
-    await this.player().getCurrentTime().then((current_time: any) => {
-      let spectro: ScrollingCanvas = this.$refs.spectro as ScrollingCanvas;
-      this.current_position = current_time;
-      spectro.scrollTo(current_time * this.pixel_per_sec + 10);
-    })
+  last_called_time = 0;
+  fps: number = 0;
+  async update_position(current_time: number) {
+    let delta = (current_time - this.last_called_time) / 1000;
+    this.last_called_time = current_time;
+    this.fps = 1 / delta;
+
+    if (this.is_playing) {
+      let elapsed_time = current_time - this.current_time_when_starting_to_play;
+
+      if (this.pixel_per_sec == -1) {
+        this.player().getDuration().then((duration: number) => {
+          this.pixel_per_sec = this.element.result.width / duration;
+        });
+      }
+      this.current_position = (((this.player_start_time + elapsed_time) / 1000) + this.player_start_time) * this.pixel_per_sec;
+    }
+    this.spectro.scrollTo(this.current_position);
+    requestAnimationFrame(this.update_position)
   }
 
   get_youtube_id() {
