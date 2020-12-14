@@ -87,9 +87,11 @@ def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, 
         frame_size=2 ** request.parameters.frame_size_power,
         overlap_factor=request.parameters.overlap_factor,
     )
+
     with stopwatch:
         spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
     orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
+    orm.save_duration(request.id, spectral_analysis.time_domain[-1])
     orm.update_request_status(request.id, 'generating image...')
     logger.info(f'generated fft data {spectral_analysis}')
     images = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
