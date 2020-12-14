@@ -23,15 +23,14 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
-import VueOpenSeaDragon from "@/components/ScrollingCanvas.vue";
 import ScrollingCanvas from "@/components/ScrollingCanvas.vue";
 
 
 var getYouTubeID = require('get-youtube-id');
 @Component({
-  components: {ScrollingCanvas, VueOpenSeaDragon}
+  components: {ScrollingCanvas}
 })
-export default class SpectralAlaysisFlowListElement extends Vue {
+export default class SingleElementDetail extends Vue {
   @Prop({required: true})
   private element!: SpectralAnalysisFlow;
   players_vars = {origin: window.location}
@@ -44,11 +43,12 @@ export default class SpectralAlaysisFlowListElement extends Vue {
   spectro!: ScrollingCanvas;
 
   mounted() {
+    console.log(this);
     this.spectro = this.$refs.spectro as ScrollingCanvas;
     this.current_position = 0;
     // we multiply by 1000 because we want a fix point number to avoid propagating rounding errors.
     this.pixel_per_sec = (this.element.result.width / this.element.duration) * 1000;
-    requestAnimationFrame(this.update_position)
+    this.spectro.scrollTo(0);
   }
 
   async playing() {
@@ -58,6 +58,7 @@ export default class SpectralAlaysisFlowListElement extends Vue {
     await this.player().getCurrentTime().then((current_time: any) => {
       this.player_start_time = current_time * 1000;
     })
+    requestAnimationFrame(this.update_position)
   }
 
   onPause() {
@@ -76,9 +77,10 @@ export default class SpectralAlaysisFlowListElement extends Vue {
     if (this.is_playing) {
       let elapsed_time = current_time - this.current_time_when_starting_to_play;
       this.current_position = (elapsed_time + this.player_start_time) / 1000
+      this.spectro.scrollTo((this.current_position * (this.pixel_per_sec / 1000)));
+      requestAnimationFrame(this.update_position)
     }
-    this.spectro.scrollTo((this.current_position * (this.pixel_per_sec / 1000)));
-    requestAnimationFrame(this.update_position)
+
   }
 
   get_youtube_id() {

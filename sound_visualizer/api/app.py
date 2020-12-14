@@ -1,7 +1,7 @@
 import logging
 
 import pymongo
-from flask import Flask
+from flask import Flask, redirect, request, send_file
 from flask_cors import CORS
 from flask_restful import Api
 
@@ -63,6 +63,13 @@ def create_app(name):
 
 init_logger()
 app = create_app(__name__)
+
+
+@app.route('/')
+def home():
+    if 'api_url' not in request.args.keys():
+        return redirect(f'{request.url}?api_url={request.url_root}')
+    return send_file('../../static/dist/index.html')
 
 
 @app.after_request
