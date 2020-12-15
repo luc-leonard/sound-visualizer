@@ -20,25 +20,45 @@ export default class ScrollingCanvas extends Vue {
   @Prop({required: true})
   tile_height!: number;
 
-  images = new Array<HTMLImageElement | null>();
-  context!: CanvasRenderingContext2D;
+  private images = new Array<HTMLImageElement | null>();
+  private context!: CanvasRenderingContext2D;
   private loadingImages = new Map<number, boolean>();
+  private canvas!: HTMLCanvasElement
 
   mounted() {
     let canvas = this.$refs.theCanvas as any;
     canvas.width = this.width;
     canvas.height = this.height;
 
-    this.context = canvas.getContext('2d')
-
+    this.context = canvas.getContext('2d');
+    this.canvas = canvas;
     this.scrollTo(0)
   }
 
   private drawLineAt(x: number) {
     this.context.moveTo(x, 0)
-    this.context.lineTo(x, this.height)
+    this.context.lineTo(x, this.canvas.height)
     this.context.strokeStyle = 'red';
     this.context.stroke()
+  }
+
+  requestFullScreen() {
+    let old_width = this.canvas.width;
+    let old_height = this.canvas.height;
+    this.canvas.style.width = window.innerWidth + "px";
+    this.canvas.style.height = window.innerHeight + "px";
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    this.canvas.requestFullscreen({});
+    this.canvas.addEventListener('fullscreenchange', () => {
+      //means out of full screen. awful.
+        if (document.fullscreenElement == null) {
+          this.canvas.height = old_height;
+          this.canvas.width = old_width;
+          this.canvas.style.width = this.canvas.width + "px";
+          this.canvas.style.height = this.canvas.height + "px";
+        }
+    })
   }
 
   clear() {
@@ -47,9 +67,9 @@ export default class ScrollingCanvas extends Vue {
   }
   // eslint-disable-next-line no-unused-vars
   scrollTo(x: number) {
-    let first_image_to_show = Math.floor(x / this.tile_width)
-    let last_image_to_show = Math.floor((x + this.context.canvas.width) / this.tile_width)
-
+    let first_image_to_show = Math.floor(x  / this.tile_width)
+    let last_image_to_show = Math.floor((x + this.canvas.width) / this.tile_width)
+    console.log(first_image_to_show, last_image_to_show)
     for (let i = first_image_to_show; i <= last_image_to_show; ++i) {
       if (this.images[i] == null && !this.loadingImages.has(i)) {
         this.loadingImages.set(i, false);
@@ -63,9 +83,32 @@ export default class ScrollingCanvas extends Vue {
 
     if (this.loadingImages.get(first_image_to_show) == true) {
         this.context.drawImage(this.images[first_image_to_show]!,
-          -(x % this.tile_width) + this.width / 2, this.height - this.tile_height);
+         0,
+          this.tile_height - this.canvas.height,
+          this.tile_width,
+          this.canvas.height,
+          -(x % this.tile_width) + this.canvas.width / 2,
+            0,
+          this.tile_width,
+        this.canvas.height);
     }
-    this.drawLineAt(this.width / 2);
+    let j = 1;
+    for (let i = first_image_to_show + 1; i <= last_image_to_show; i++) {
+      if (this.loadingImages.get(i)) {
+        console.log('drawing image ', i)
+        this.context.drawImage(this.images[i]!,
+            0,
+            this.tile_height - this.canvas.height,
+            this.tile_width,
+            this.canvas.height,
+            -(x % this.tile_width) + this.canvas.width / 2 + (j * this.tile_width),
+            0,
+            this.tile_width,
+            this.canvas.height);
+      }
+      j++;
+    }
+    this.drawLineAt(this.canvas.width / 2);
   }
 
 
