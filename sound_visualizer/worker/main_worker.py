@@ -7,6 +7,8 @@ from typing import Generator
 import numpy as np
 import PIL
 import pymongo
+import requests
+from bs4 import BeautifulSoup
 from PIL import Image
 
 from sound_visualizer.app.converter import Mp3Converter
@@ -63,10 +65,18 @@ def toLogScale(image: PIL.Image, frequency_domain: np.ndarray) -> PIL.Image.Imag
     return vstack(list(reversed(images)))
 
 
+def save_youtube_title(request: SpectralAnalysisFlow):
+    assert request.parameters.youtube_url is not None
+    youtube_page = requests.get(request.parameters.youtube_url)
+    parsed_page = BeautifulSoup(youtube_page.text, 'html.parser')
+    orm.save_title(request.id, parsed_page.title.text)
+
+
 def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, None, None]:
     stopwatch = StopWatch()
     orm.update_request_status(request.id, 'downloading')
     if request.parameters.youtube_url is not None and len(request.parameters.youtube_url) == 0:
+        save_youtube_title(request)
         filename = '/tmp/' + str(random.randint(0, 255))
         with stopwatch:
             download_file(request.parameters.filename, filename)
