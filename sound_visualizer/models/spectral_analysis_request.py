@@ -16,6 +16,7 @@ class SpectralAnalysisResult(BaseModel):
 
 class SpectralAnalysisFlow(BaseModel):
     id: str
+    title: Optional[str]
     duration: Optional[float]
     parameters: SpectralAnalysisParameters
     # how much time each step took ?

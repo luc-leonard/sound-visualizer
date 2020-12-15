@@ -8,22 +8,22 @@
              @playing="playing">
     </youtube>
     <div>{{ fps }}</div>
-    <ScrollingCanvas :image_url="make_url(API_BASE_URL)"
+    <ScrollingCanvas
                      width="2000"
                      :height="element.result.height / 4"
                      :tile_width="element.result.tile_width"
                      :tile_height="element.result.height"
                      class="image_container"
-                     :image_url_base="make_url(API_BASE_URL)"
+                     :image_url_base="make_url()"
                      ref="spectro"></ScrollingCanvas>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
-import ScrollingCanvas from "@/components/ScrollingCanvas.vue";
+import ScrollingCanvas from "@/components/result_detail/ScrollingCanvas.vue";
 
 
 var getYouTubeID = require('get-youtube-id');
@@ -42,17 +42,28 @@ export default class SingleElementDetail extends Vue {
   is_playing: boolean = false;
   spectro!: ScrollingCanvas;
 
+  @Watch('element') onElementChanged() {
+    console.log('element changed on ', this)
+    this.spectro.image_url_base = this.make_url()
+    this.spectro.clear();
+    this.spectro.$forceUpdate();
+    this.spectro.scrollTo(0);
+  }
+
   mounted() {
-    console.log(this);
     this.spectro = this.$refs.spectro as ScrollingCanvas;
     this.current_position = 0;
     // we multiply by 1000 because we want a fix point number to avoid propagating rounding errors.
     this.pixel_per_sec = (this.element.result.width / this.element.duration) * 1000;
+    this.spectro.clear();
     this.spectro.scrollTo(0);
   }
 
   async playing() {
+    //this.$data.mixpanel.track("Video play", {id: this.element.id});
+
     console.log('play')
+
     this.is_playing = true;
     this.current_time_when_starting_to_play = performance.now();
     await this.player().getCurrentTime().then((current_time: any) => {
@@ -87,8 +98,8 @@ export default class SingleElementDetail extends Vue {
     return getYouTubeID(this.element.parameters.youtube_url)
   }
 
-  make_url(base_url: string) {
-    return base_url + '/tiles/' + this.element.id + '/'
+  make_url() {
+    return process.env.VUE_APP_BASE_API_URL + '/tiles/' + this.element.id + '/'
   }
 
   player() {
