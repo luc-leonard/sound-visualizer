@@ -71,6 +71,9 @@ class SpectralAnalysisFlowORM:
         self._collection.update_one({'id': id, 'result': None}, {'$set': {'result': {}}})
         self._collection.update_one({'id': id}, {'$set': {'result.tile_width': size}})
 
+    def save_title(self, id, title):
+        self._collection.update_one({'id': id}, {'$set': {'title': title}})
+
     def save_image_size(self, id, size):
         self._collection.update_one({'id': id, 'result': None}, {'$set': {'result': {}}})
         self._collection.update_one(

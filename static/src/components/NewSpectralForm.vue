@@ -2,7 +2,7 @@
   <div class="new-spectral-form">
     <div class="input-group">
       <span class="input-group-addon" id="basic-addon1">URL</span>
-      <input type="text" class="form-control" v-model="value"/>
+      <input type="text" class="form-control" v-model="url"/>
     </div>
     <div class="input-group">
       <span class="input-group-addon" id="basic-addon1">frame size</span>
@@ -12,7 +12,7 @@
       <span class="input-group-addon" id="basic-addon1">overlap factor</span>
       <input class="form-control" v-model="overlap_factor"/>
     </div>
-    <button @click="compute"> COMPUTE</button>
+    <button @click.native="compute"> COMPUTE</button>
 
     <div class="well">{{ compute_result }}</div>
   </div>
@@ -28,10 +28,12 @@ export default class NewSpectralForm extends Vue {
   overlap_factor: number = 0.8;
 
   current_result_id!: String;
-  compute_result!: String;
-compute() {
+  compute_result: String = "";
+
+  compute() {
+    console.log(this);
     Axios
-        .post(this.$data.API_BASE_URL + '/requests/', {
+        .post(process.env.VUE_APP_BASE_API_URL + '/requests/', {
           'youtube_url': this.url,
           'frame_size_power': this.frame_size,
           'overlap_factor': this.overlap_factor
@@ -48,7 +50,7 @@ compute() {
       Axios.get(this.$data.API_BASE_URL + '/result/' + this.current_result_id)
           .then((response) => {
             if (response.data.status == 'finished') {
-              // send event 'NewSpectralFinished'
+              this.$emit('finished', {'new_result': response.data})
             } else {
               this.compute_result = JSON.stringify(response.data);
               this.poll_result();
