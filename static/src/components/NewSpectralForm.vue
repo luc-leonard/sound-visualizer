@@ -12,15 +12,19 @@
       <span class="input-group-addon" id="basic-addon1">overlap factor</span>
       <input class="form-control" v-model="overlap_factor"/>
     </div>
-    <button @click.native="compute"> COMPUTE</button>
+    <button @click="compute">COMPUTE</button>
 
     <div class="well">{{ compute_result }}</div>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import {Vue, Component} from "vue-property-decorator";
 import Axios from "axios";
+
+@Component({
+  components: {}
+})
 
 export default class NewSpectralForm extends Vue {
   url: String = 'https://youtube.com/...';
@@ -47,7 +51,7 @@ export default class NewSpectralForm extends Vue {
 
   poll_result() {
     setTimeout(() => {
-      Axios.get(this.$data.API_BASE_URL + '/result/' + this.current_result_id)
+      Axios.get(process.env.VUE_APP_BASE_API_URL + '/result/' + this.current_result_id)
           .then((response) => {
             if (response.data.status == 'finished') {
               this.$emit('finished', {'new_result': response.data})
