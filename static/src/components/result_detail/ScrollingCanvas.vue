@@ -41,6 +41,10 @@ export default class ScrollingCanvas extends Vue {
     this.context.stroke()
   }
 
+  clear() {
+    this.loadingImages.clear();
+    this.images = [];
+  }
   // eslint-disable-next-line no-unused-vars
   scrollTo(x: number) {
     let first_image_to_show = Math.floor(x / this.tile_width)
@@ -70,6 +74,7 @@ export default class ScrollingCanvas extends Vue {
     return new Promise<HTMLImageElement>((resolve, reject) => {
       let img = new Image()
       img.onload = () => {
+        console.log('loaded tile ', x)
         resolve(img)
       }
       img.onerror = reject
