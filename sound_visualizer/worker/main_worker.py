@@ -76,7 +76,6 @@ def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, 
     stopwatch = StopWatch()
     orm.update_request_status(request.id, 'downloading')
     if request.parameters.youtube_url is not None and len(request.parameters.youtube_url) == 0:
-        save_youtube_title(request)
         filename = '/tmp/' + str(random.randint(0, 255))
         with stopwatch:
             download_file(request.parameters.filename, filename)
@@ -84,6 +83,7 @@ def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, 
     else:
         with stopwatch:
             filename = YoutubeDownloader().download(request.parameters.youtube_url)
+            save_youtube_title(request)
         orm.add_stopwatch(request.id, 'download', stopwatch.interval)
     with stopwatch:
         orm.update_request_status(request.id, 'converting')
