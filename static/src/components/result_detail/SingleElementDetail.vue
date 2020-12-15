@@ -8,19 +8,20 @@
              @playing="playing">
     </youtube>
     <div>{{ fps }}</div>
+    <div @click="full_screen">[F U L L  S C R E E N]</div>
     <ScrollingCanvas
-                     width="2000"
-                     :height="element.result.height / 4"
-                     :tile_width="element.result.tile_width"
-                     :tile_height="element.result.height"
-                     class="image_container"
-                     :image_url_base="make_url()"
-                     ref="spectro"></ScrollingCanvas>
+        width="2000"
+        :height="element.result.height / 8"
+        :tile_width="element.result.tile_width"
+        :tile_height="element.result.height"
+        class="image_container"
+        :image_url_base="make_url()"
+        ref="spectro"></ScrollingCanvas>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import {Component, Prop, Vue} from 'vue-property-decorator';
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
 import ScrollingCanvas from "@/components/result_detail/ScrollingCanvas.vue";
@@ -42,13 +43,6 @@ export default class SingleElementDetail extends Vue {
   is_playing: boolean = false;
   spectro!: ScrollingCanvas;
 
-  @Watch('element') onElementChanged() {
-    console.log('element changed on ', this)
-    this.spectro.image_url_base = this.make_url()
-    this.spectro.clear();
-    this.spectro.$forceUpdate();
-    this.spectro.scrollTo(0);
-  }
 
   mounted() {
     this.spectro = this.$refs.spectro as ScrollingCanvas;
@@ -91,7 +85,10 @@ export default class SingleElementDetail extends Vue {
       this.spectro.scrollTo((this.current_position * (this.pixel_per_sec / 1000)));
       requestAnimationFrame(this.update_position)
     }
+  }
 
+  full_screen() {
+    this.spectro.requestFullScreen();
   }
 
   get_youtube_id() {
