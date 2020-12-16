@@ -1,3 +1,3 @@
 module.exports = {
-    publicPath: '/www/dist/'
+    //publicPath: '/www/dist/'
 }

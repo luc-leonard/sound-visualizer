@@ -36,7 +36,7 @@ def create_app(name):
     import os
 
     logger.info(f'CURRENT PATH = {os.getcwd()}')
-    app = MyApp(name, static_folder=f'{os.getcwd()}/static', static_url_path='/www/')
+    app = MyApp(name)
     logger.info(app.the_config)
     api = Api(app)
     if app.the_config.cors_origin is not None:
@@ -65,9 +65,19 @@ init_logger()
 app = create_app(__name__)
 
 
-@app.route('/')
-def home():
-    return send_file('../../static/dist/index.html')
+# catch all URL. allows us to use Vue router history
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def home(path: str):
+    logger.info(f'{path} asked')
+    try:
+        return send_file('../../static/dist/' + path)
+    except FileNotFoundError or IsADirectoryError:
+        logger.warning(
+            f'{path} not found. It usually means that path is for the frontend, and that we should send the index'
+        )
+        # it means the 'path' is for the frontend :)
+        return send_file('../../static/dist/index.html')
 
 
 @app.after_request

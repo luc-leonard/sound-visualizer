@@ -69,7 +69,7 @@ export default class ScrollingCanvas extends Vue {
   scrollTo(x: number) {
     let first_image_to_show = Math.floor(x  / this.tile_width)
     let last_image_to_show = Math.floor((x + this.canvas.width) / this.tile_width)
-    console.log(first_image_to_show, last_image_to_show)
+
     for (let i = first_image_to_show; i <= last_image_to_show; ++i) {
       if (this.images[i] == null && !this.loadingImages.has(i)) {
         this.loadingImages.set(i, false);
@@ -95,7 +95,6 @@ export default class ScrollingCanvas extends Vue {
     let j = 1;
     for (let i = first_image_to_show + 1; i <= last_image_to_show; i++) {
       if (this.loadingImages.get(i)) {
-        console.log('drawing image ', i)
         this.context.drawImage(this.images[i]!,
             0,
             this.tile_height - this.canvas.height,
@@ -113,7 +112,6 @@ export default class ScrollingCanvas extends Vue {
 
 
   private async getImage(x: number) {
-    console.log("loading tile", x);
     return new Promise<HTMLImageElement>((resolve, reject) => {
       let img = new Image()
       img.onload = () => {
@@ -130,12 +128,10 @@ export default class ScrollingCanvas extends Vue {
 
 <style module>
 .image_container {
-  border: 1px solid blue;
-  width: 90%;
+  width: 100%;
 }
 
 .spectrogram {
-  border: 1px solid red;
   height: 100%;
   width: 100%;
 }
