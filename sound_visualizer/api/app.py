@@ -1,5 +1,5 @@
 import logging
-
+import os
 import pymongo
 from flask import Flask, send_file
 from flask_cors import CORS
@@ -33,8 +33,6 @@ class MyApp(Flask):
 
 
 def create_app(name):
-    import os
-
     logger.info(f'CURRENT PATH = {os.getcwd()}')
     app = MyApp(name)
     logger.info(app.the_config)
@@ -69,7 +67,7 @@ app = create_app(__name__)
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def home(path: str):
-    logger.info(f'{path} asked')
+    logger.info(f'{path} asked. we are at {os.getcwd()}')
     try:
         return send_file('../../static/dist/' + path)
     except FileNotFoundError or IsADirectoryError:
