@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import pymongo
 from flask import Flask, send_file
@@ -73,14 +74,15 @@ def home(path: str):
     base_path = os.getcwd()
     if 'api' in base_path:
         base_path = base_path + '../../'
-    try:
+    full_path = Path(base_path) / 'static/dist' / path
+    if full_path.exists() and not full_path.is_dir():
         return send_file(f'{base_path}/static/dist/' + path)
-    except FileNotFoundError or IsADirectoryError:
+    else:
         logger.warning(
             f'{path} not found. It usually means that path is for the frontend, and that we should send the index'
         )
         # it means the 'path' is for the frontend :)
-        return send_file(f'{base_path}/static/dist/index.html', cache_timeout=0)
+        return send_file(f'{base_path}/static/dist/index.html')
 
 
 @app.after_request
@@ -89,3 +91,7 @@ def add_headers(response):
         if hdr_name.startswith('Access-Control-'):
             response.headers.remove(hdr_name)
     return response
+
+
+if __name__ == '__main__':
+    app.run()
