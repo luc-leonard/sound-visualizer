@@ -27,8 +27,8 @@ lint:
 
 .PHONY: docker
 docker:
-	docker build  -f docker_files/Dockerfile_web -t lucleonard/sound-visualizer-web:$(VERSION) -t lucleonard/sound-visualizer-web:latest .
-	docker build  -f docker_files/Dockerfile_worker -t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
+	docker build  -f docker/Dockerfile_web -t lucleonard/sound-visualizer-web:$(VERSION) -t lucleonard/sound-visualizer-web:latest .
+	docker build  -f docker/Dockerfile_worker -t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
 
 publish:
 	docker push lucleonard/sound-visualizer-web:$(VERSION)
