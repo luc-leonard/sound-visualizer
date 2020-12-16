@@ -75,7 +75,7 @@ def home(path: str):
     if 'api' in base_path:
         base_path = base_path + '../../'
     full_path = Path(base_path) / 'static/dist' / path
-    if full_path.exists():
+    if full_path.exists() and not full_path.is_dir():
         return send_file(f'{base_path}/static/dist/' + path)
     else:
         logger.warning(
