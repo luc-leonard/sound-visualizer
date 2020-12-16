@@ -36,6 +36,7 @@ class MyApp(Flask):
 def create_app(name):
     logger.info(f'CURRENT PATH = {os.getcwd()}')
     app = MyApp(name)
+
     logger.info(app.the_config)
     api = Api(app)
     if app.the_config.cors_origin is not None:
@@ -79,7 +80,7 @@ def home(path: str):
             f'{path} not found. It usually means that path is for the frontend, and that we should send the index'
         )
         # it means the 'path' is for the frontend :)
-        return send_file(f'{base_path}/static/dist/index.html')
+        return send_file(f'{base_path}/static/dist/index.html', cache_timeout=0)
 
 
 @app.after_request
