@@ -1,5 +1,6 @@
 import logging
 import os
+
 import pymongo
 from flask import Flask, send_file
 from flask_cors import CORS
@@ -68,14 +69,17 @@ app = create_app(__name__)
 @app.route('/<path:path>')
 def home(path: str):
     logger.info(f'{path} asked. we are at {os.getcwd()}')
+    base_path = os.getcwd()
+    if 'api' in base_path:
+        base_path = base_path + '../../'
     try:
-        return send_file('../../static/dist/' + path)
+        return send_file(f'{base_path}/static/dist/' + path)
     except FileNotFoundError or IsADirectoryError:
         logger.warning(
             f'{path} not found. It usually means that path is for the frontend, and that we should send the index'
         )
         # it means the 'path' is for the frontend :)
-        return send_file('../../static/dist/index.html')
+        return send_file(f'{base_path}/static/dist/index.html')
 
 
 @app.after_request
