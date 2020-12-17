@@ -4,6 +4,7 @@ from typing import Callable
 from google.cloud import pubsub_v1
 
 from sound_visualizer.app.message_queue.message_queue import (
+    Message,
     MessageQueueConsumer,
     MessageQueuePublisher,
 )
@@ -14,9 +15,9 @@ class GoogleCloudPublisher(MessageQueuePublisher):
         self.publisher = pubsub_v1.PublisherClient()
         self.project_name = project_name
 
-    def publish(self, routing_key: str, message: bytes) -> Future:
+    def publish(self, routing_key: str, message: bytes) -> None:
         publish_path = self.publisher.topic_path(self.project_name, 'my-topic')
-        return self.publisher.publish(publish_path, message)
+        self.publisher.publish(publish_path, message)
 
 
 class GoogleCloudConsumer(MessageQueueConsumer):
@@ -24,7 +25,7 @@ class GoogleCloudConsumer(MessageQueueConsumer):
         self.subscriber = pubsub_v1.SubscriberClient()
         self.project_name = project_name
 
-    def consume(self, binding_key: str, callback: Callable) -> Future:
+    def consume(self, binding_key: str, callback: Callable[[Message], None]) -> Future:
         subscription_path = self.subscriber.subscription_path(self.project_name, binding_key)
         return self.subscriber.subscribe(subscription_path, callback)
 

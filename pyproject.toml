@@ -25,6 +25,8 @@ docker = "^4.4.0"
 Flask-Pydantic = "^0.4.0"
 Flask-Cors = "^3.0.9"
 beautifulsoup4 = "^4.9.3"
+pika = "^1.1.0"
+environ-config = "^20.1.0"
 
 
 [tool.poetry.dev-dependencies]
