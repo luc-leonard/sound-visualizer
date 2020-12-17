@@ -19,9 +19,13 @@ from sound_visualizer.app.spectral_analysis_request_handler import SpectralAnaly
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
 from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisFlowORM
+from sound_visualizer.utils.google_cloud import init_google_cloud
 from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
+
+init_logger()
+init_google_cloud()
 
 
 class MyApp(Flask):
@@ -62,7 +66,6 @@ def create_app(name):
     return app
 
 
-init_logger()
 app = create_app(__name__)
 
 
