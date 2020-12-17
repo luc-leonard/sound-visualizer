@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 2,
+  "dockerfileLines": [
+    "FROM socialengine/nginx-spa:latest",
+    "COPY ./static/dist/ /app",
+    "RUN chmod -R 777 /app"
+  ]
+}
