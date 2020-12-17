@@ -1,25 +1,29 @@
+import logging
 import os
-from typing import List
 
-from pydantic import BaseModel
+import environ
 
-
-class Config(BaseModel):
-    cors_origin: List[str]
-
-    mongo_connection_string: str
-
-    google_application_credentials: str
-    google_application_project_name: str
-    google_storage_bucket_name: str
+logger = logging.getLogger(__name__)
 
 
-def config_from_env():
-    cors_origin = os.getenv('CORS_ORIGIN', '')
-    splitted_cors_origin = cors_origin.split(';')
-    return Config(
-        cors_origin=splitted_cors_origin,
-        **{
-            field: os.getenv(field.upper()) for field in Config.__fields__ if field != 'cors_origin'
-        },
-    )
+@environ.config
+class Config:
+    @staticmethod
+    def from_environ(environ) -> 'Config':
+        ...
+
+    cors_origin: str = environ.var(default='')
+
+    mongo_connection_string: str = environ.var()
+
+    google_application_credentials: str = environ.var()
+    google_application_project_name: str = environ.var()
+    google_storage_bucket_name: str = environ.var()
+
+    rabbitmq_hostname: str = environ.var(default='localhost')
+    rabbitmq_port: int = environ.var(default=5672)
+
+
+def config_from_env() -> Config:
+    config = Config.from_environ(os.environ)
+    return config
