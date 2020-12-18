@@ -1,7 +1,10 @@
 import logging
 import os
+import time
 from pathlib import Path
+from threading import Thread
 
+import pika
 import pymongo
 from flask import Flask, send_file
 from flask_cors import CORS
@@ -27,6 +30,13 @@ logger = logging.getLogger(__name__)
 init_logger()
 
 
+def heartbeat(connection: pika.BlockingConnection):
+    while True:
+        time.sleep(15)
+        # it is likely that a better way exists
+        connection.channel().close()
+
+
 class MyApp(Flask):
     def __init__(self, *args, **kwargs):
         super(MyApp, self).__init__(*args, **kwargs)
@@ -34,6 +44,8 @@ class MyApp(Flask):
         init_google_cloud(self.the_config)
         self.cache = Cache(cache_folder='/tmp/sound_visualizer')
         connection = make_connection(self.the_config)
+        self.hearbeat_thread = Thread(target=heartbeat, args=[connection])
+        self.hearbeat_thread.start()
         self.publisher = RabbitMqPublisher(connection)
         self.storage = GoogleCloudStorage(self.the_config.google_storage_bucket_name)
         client = pymongo.MongoClient(self.the_config.mongo_connection_string)
