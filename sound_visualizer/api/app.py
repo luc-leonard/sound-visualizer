@@ -14,7 +14,7 @@ from sound_visualizer.api.resources.spectral_analysis_request import (
 from sound_visualizer.api.resources.spectral_analysis_result import SpectralAnalysisResultResource
 from sound_visualizer.api.resources.tiles_resource import TilesResources
 from sound_visualizer.app.cache import Cache
-from sound_visualizer.app.message_queue.google_cloud_pubsub import GoogleCloudPublisher
+from sound_visualizer.app.message_queue.rabbitmq import RabbitMqPublisher, make_connection
 from sound_visualizer.app.spectral_analysis_request_handler import SpectralAnalysisRequestHandler
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
@@ -31,7 +31,8 @@ init_google_cloud()
 class MyApp(Flask):
     the_config = config_from_env()
     cache = Cache(cache_folder='/tmp/sound_visualizer')
-    publisher = GoogleCloudPublisher(the_config.google_application_project_name)
+    connection = make_connection(the_config)
+    publisher = RabbitMqPublisher(connection)
     storage = GoogleCloudStorage(the_config.google_storage_bucket_name)
     client = pymongo.MongoClient(the_config.mongo_connection_string)
     db = client.sound_visualizer
@@ -45,7 +46,7 @@ def create_app(name):
     logger.info(app.the_config)
     api = Api(app)
     if app.the_config.cors_origin is not None:
-        CORS(app, resources={r"/*": {"origins": app.the_config.cors_origin}})
+        CORS(app, resources={r"/*": {"origins": app.the_config.cors_origin.split(';')}})
 
     handler = SpectralAnalysisRequestHandler(app.orm, app.publisher, app.storage)
 

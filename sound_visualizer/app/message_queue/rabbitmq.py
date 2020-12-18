@@ -1,6 +1,6 @@
 from asyncio import new_event_loop
 from asyncio.futures import Future
-from typing import Callable
+from typing import Callable, List
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
@@ -14,9 +14,16 @@ from sound_visualizer.config import Config
 
 
 def make_connection(config: Config) -> pika.BlockingConnection:
-    return pika.BlockingConnection(
-        pika.ConnectionParameters(host=config.rabbitmq_hostname, port=config.rabbitmq_port)
-    )
+    credentials = None
+    if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
+        credentials = pika.PlainCredentials(
+            username=config.rabbitmq_username, password=config.rabbitmq_password
+        )
+
+    parameters = pika.ConnectionParameters(host=config.rabbitmq_hostname, port=config.rabbitmq_port)
+    if credentials is not None:
+        parameters.credentials = credentials
+    return pika.BlockingConnection(parameters)
 
 
 class RabbitMqPublisher(MessageQueuePublisher):
@@ -46,19 +53,28 @@ class RabbitMqConsumer(MessageQueueConsumer):
         return self.event_loop.run_until_complete(self.future)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        for tag in self.tags:
+            self.channel.stop_consuming(tag)
 
     def __init__(self, connection: pika.BlockingConnection):
         self.channel: BlockingChannel = connection.channel()
         self.event_loop = new_event_loop()
         self.future = self.event_loop.create_future()
+        self.tags: List[str] = []
 
     def consume(self, binding_key: str, callback: Callable[[Message], None]) -> Future:
         def _callback(ch, method, properties, body):
             callback(RabbitMqMessage(ch, method, properties, body))
 
-        self.channel.basic_consume(queue=binding_key, auto_ack=True, on_message_callback=_callback)
+        self.tags.append(
+            self.channel.basic_consume(
+                queue=binding_key, auto_ack=True, on_message_callback=_callback
+            )
+        )
         return self.future
+
+    def close(self):
+        self.future.set_result('STOP')
 
     def _start_consume(self):
         self.channel.start_consuming()

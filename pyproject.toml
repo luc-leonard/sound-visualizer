@@ -27,6 +27,7 @@ Flask-Cors = "^3.0.9"
 beautifulsoup4 = "^4.9.3"
 pika = "^1.1.0"
 environ-config = "^20.1.0"
+promise = "^2.3"
 
 
 [tool.poetry.dev-dependencies]

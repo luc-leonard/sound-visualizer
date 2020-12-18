@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def init_google_cloud():
     credentials = os.getenv('GOOGLE_CREDENTIALS', None)
-    path_to_credentials = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    path_to_credentials = os.getenv('APP_GOOGLE_APPLICATION_CREDENTIALS')
     logger.info(
         f'credentials present = {credentials is not None} to be put in {path_to_credentials}'
     )
