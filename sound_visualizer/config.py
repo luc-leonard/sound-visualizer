@@ -22,6 +22,7 @@ class Config:
     google_storage_bucket_name: str = environ.var()
 
     rabbitmq_hostname: str = environ.var(default='localhost')
+    rabbitmq_vhost: str = environ.var(default='/')
     rabbitmq_port: int = environ.var(default=5672)
     rabbitmq_username: Optional[str] = environ.var(default=None)
     rabbitmq_password: Optional[str] = environ.var(default=None)
