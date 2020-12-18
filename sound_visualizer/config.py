@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional
 
 import environ
 
@@ -22,6 +23,8 @@ class Config:
 
     rabbitmq_hostname: str = environ.var(default='localhost')
     rabbitmq_port: int = environ.var(default=5672)
+    rabbitmq_username: Optional[str] = environ.var(default=None)
+    rabbitmq_password: Optional[str] = environ.var(default=None)
 
 
 def config_from_env() -> Config:

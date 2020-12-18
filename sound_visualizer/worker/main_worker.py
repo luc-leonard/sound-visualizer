@@ -14,7 +14,7 @@ from PIL import Image
 from sound_visualizer.app.converter import Mp3Converter
 from sound_visualizer.app.downloader.youtube import YoutubeDownloader
 from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
-from sound_visualizer.app.message_queue.google_cloud_pubsub import GoogleCloudConsumer
+from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, make_connection
 from sound_visualizer.app.sound import SpectralAnalyzer
 from sound_visualizer.app.sound.sound_reader import SoundReader
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
@@ -24,7 +24,6 @@ from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlowORM,
 )
 from sound_visualizer.utils import StopWatch
-from sound_visualizer.utils.google_cloud import init_google_cloud
 from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
@@ -144,10 +143,10 @@ orm = SpectralAnalysisFlowORM(db)
 
 if __name__ == '__main__':
     init_logger()
-    init_google_cloud()
+    connection = make_connection(config)
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
-    subscriber = GoogleCloudConsumer(config.google_application_project_name)
-    streaming_pull_future = subscriber.consume('my-sub', callback=callback)
+    subscriber = RabbitMqConsumer(connection)
+    streaming_pull_future = subscriber.consume('render-request', callback=callback)
     with subscriber:
         try:
             streaming_pull_future.result()
