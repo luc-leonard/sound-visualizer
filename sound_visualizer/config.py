@@ -17,7 +17,7 @@ class Config:
 
     mongo_connection_string: str = environ.var()
 
-    google_application_credentials: str = environ.var()
+    google_credentials: Optional[str] = environ.var(default=None)
     google_application_project_name: str = environ.var()
     google_storage_bucket_name: str = environ.var()
 
