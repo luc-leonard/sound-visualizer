@@ -25,25 +25,25 @@ from sound_visualizer.utils.logger import init_logger
 logger = logging.getLogger(__name__)
 
 init_logger()
-init_google_cloud()
 
 
 class MyApp(Flask):
-    the_config = config_from_env()
-    cache = Cache(cache_folder='/tmp/sound_visualizer')
-    connection = make_connection(the_config)
-    publisher = RabbitMqPublisher(connection)
-    storage = GoogleCloudStorage(the_config.google_storage_bucket_name)
-    client = pymongo.MongoClient(the_config.mongo_connection_string)
-    db = client.sound_visualizer
-    orm = SpectralAnalysisFlowORM(db)
+    def __init__(self, *args, **kwargs):
+        super(MyApp, self).__init__(*args, **kwargs)
+        self.the_config = config_from_env()
+        init_google_cloud(self.the_config)
+        self.cache = Cache(cache_folder='/tmp/sound_visualizer')
+        connection = make_connection(self.the_config)
+        self.publisher = RabbitMqPublisher(connection)
+        self.storage = GoogleCloudStorage(self.the_config.google_storage_bucket_name)
+        client = pymongo.MongoClient(self.the_config.mongo_connection_string)
+        db = client.sound_visualizer
+        self.orm = SpectralAnalysisFlowORM(db)
 
 
 def create_app(name):
     logger.info(f'CURRENT PATH = {os.getcwd()}')
     app = MyApp(name)
-
-    logger.info(app.the_config)
     api = Api(app)
     if app.the_config.cors_origin is not None:
         CORS(app, resources={r"/*": {"origins": app.the_config.cors_origin.split(';')}})
