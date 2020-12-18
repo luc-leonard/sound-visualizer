@@ -21,7 +21,7 @@ def make_connection(config: Config) -> pika.BlockingConnection:
         )
 
     parameters = pika.ConnectionParameters(
-        host=config.rabbitmq_hostname, port=config.rabbitmq_port, virtual_host=config.rabbitmq_vhost
+        host=config.rabbitmq_hostname, port=config.rabbitmq_port, virtual_host=config.rabbitmq_vhost, heartbeat=15
     )
     if credentials is not None:
         parameters.credentials = credentials
