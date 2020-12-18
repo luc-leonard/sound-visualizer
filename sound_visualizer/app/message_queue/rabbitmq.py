@@ -20,7 +20,9 @@ def make_connection(config: Config) -> pika.BlockingConnection:
             username=config.rabbitmq_username, password=config.rabbitmq_password
         )
 
-    parameters = pika.ConnectionParameters(host=config.rabbitmq_hostname, port=config.rabbitmq_port)
+    parameters = pika.ConnectionParameters(
+        host=config.rabbitmq_hostname, port=config.rabbitmq_port, virtual_host=config.rabbitmq_vhost
+    )
     if credentials is not None:
         parameters.credentials = credentials
     return pika.BlockingConnection(parameters)
