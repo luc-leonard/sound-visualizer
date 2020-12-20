@@ -1,11 +1,17 @@
 pipeline {
-	agent {docker {image 'python:3.9-buster'}}
+	agent {
+	  docker {
+	    image 'python:3.9-buster'
+	    args '-V $HOME/.pip:/pip-cache'
+	   }
+	}
+
     stages {
     stage('install deps') {
       steps {
         sh 'pwd'
       	sh 'ls -l'
-      	sh 'pip install -r requirements.txt'
+      	sh 'pip install --cache-dir /pip-cache -r requirements.txt'
       }
     }
     stage('Lint') {

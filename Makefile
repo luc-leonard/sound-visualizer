@@ -16,7 +16,10 @@ install:
 	poetry install
 
 docker_lint:
-	$(lint)
+	flake8 sound_visualizer tests
+	$(isort) --check-only --df
+	$(black) --check --diff
+	mypy .
 
 format:
 	$(POETRY) $(isort)
