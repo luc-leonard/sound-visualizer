@@ -19,11 +19,6 @@ pipeline {
                 sh 'make docker_lint'
             }
         }
-        stage('Test') {
-            steps {
-                sh 'pytest'
-            }
-        }
         stage('build') {
             steps {
                 sh 'make docker'
