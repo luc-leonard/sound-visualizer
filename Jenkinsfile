@@ -2,9 +2,9 @@ pipeline {
 	agent {
 	  docker {
 	    image 'python:3.9-buster'
-	    args '-v $HOME/.pip:/pip-cache
-	          -v /var/run/docker.sock:/var/run/docker.sock
-	          -v /usr/bin/docker:/usr/bin/docker'
+	    args '''-v $HOME/.pip:/pip-cache
+	          -v /var/run/docker.sock:/var/run/docker.sock \
+	          -v /usr/bin/docker:/usr/bin/docker'''
 	   }
 	}
 
