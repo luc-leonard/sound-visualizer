@@ -3,22 +3,17 @@ pipeline {
     stages {
     stage('Lint') {
             steps {
-                echo 'Linting...'
-            }
-        }
-        stage('Build') {
-            steps {
-                echo 'Building..'
+                poetry run make format lint
             }
         }
         stage('Test') {
             steps {
-                echo 'Testing..'
+                poetry run pytest
             }
         }
-        stage('Deploy') {
+        stage('build') {
             steps {
-                echo 'Deploying....'
+                make docker
             }
         }
     }
