@@ -11,7 +11,7 @@ pipeline {
       steps {
         sh 'pwd'
       	sh 'ls -l'
-      	sh 'pip install --cache-dir /pip-cache -r requirements.txt'
+      	sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
       }
     }
     stage('Lint') {
