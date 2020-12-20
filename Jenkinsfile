@@ -3,6 +3,8 @@ pipeline {
     stages {
     stage('install deps') {
       steps {
+        sh 'pwd'
+      	sh 'ls -l'
       	sh 'pip install -r requirements.txt'
       }
     }
