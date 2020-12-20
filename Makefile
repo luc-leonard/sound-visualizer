@@ -1,16 +1,14 @@
 ###############################
 # Configuration and variables #
 ###############################
-
-
-
+VERSION=0.1.0
 #################
 # General goals #
 #################
 POETRY = poetry run
 isort =  isort sound_visualizer tests
 black = black sound_visualizer tests
-VERSION = `poetry run python get_version.py`
+#VERSION = `poetry run python get_version.py`
 
 install:
 	poetry install
