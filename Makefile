@@ -8,7 +8,7 @@
 # General goals #
 #################
 POETRY = poetry run
-isort = $(POETRY) isort sound_visualizer tests
+isort =  isort sound_visualizer tests
 black = $(POETRY) black sound_visualizer tests
 VERSION = `poetry run python get_version.py`
 
@@ -16,17 +16,16 @@ install:
 	poetry install
 
 docker_lint:
-	POETRY =
 	$(lint)
 
 format:
-	$(isort)
-	$(black)
+	$(POETRY) $(isort)
+	$(POETRY) $(black)
 
 lint:
 	$(POETRY) flake8 sound_visualizer tests
-	$(isort) --check-only --df
-	$(black) --check --diff
+	$(POETRY) $(isort) --check-only --df
+	$(POETRY) $(black) --check --diff
 	$(POETRY) mypy .
 
 .PHONY: docker
