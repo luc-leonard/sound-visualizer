@@ -3,22 +3,22 @@ pipeline {
     stages {
     stage('install deps') {
       steps {
-      	pip install -r requirements.txt
+      	sh 'pip install -r requirements.txt'
       }
     }
     stage('Lint') {
             steps {
-                poetry run make format lint
+                sh 'make format lint'
             }
         }
         stage('Test') {
             steps {
-                poetry run pytest
+                sh 'pytest'
             }
         }
         stage('build') {
             steps {
-                make docker
+                sh 'make docker'
             }
         }
     }
