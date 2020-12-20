@@ -9,7 +9,7 @@
 #################
 POETRY = poetry run
 isort =  isort sound_visualizer tests
-black = $(POETRY) black sound_visualizer tests
+black = black sound_visualizer tests
 VERSION = `poetry run python get_version.py`
 
 install:
