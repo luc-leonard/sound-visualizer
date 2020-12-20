@@ -33,20 +33,21 @@ pipeline {
 				}
 			}
 		}
-		stage ('yarn build') {
-		   agent {
-			docker {
-					image 'node:15'
-					args '''-v $HOME/.node_module:/node_module
-							-v /var/run/docker.sock:/var/run/docker.sock \
-							-v /usr/bin/docker:/usr/bin/docker'''
-					}
-				}
-			}
-			steps {
-				sh 'yarn build --mode production'
-				sh 'make docker-front'
-			}
-	 	}
 	}
+// 		stage ('yarn build') {
+// 		   agent {
+// 			docker {
+// 					image 'node:15'
+// 					args '''-v $HOME/.node_module:/node_module
+// 							-v /var/run/docker.sock:/var/run/docker.sock \
+// 							-v /usr/bin/docker:/usr/bin/docker'''
+// 					}
+// 				}
+// 			}
+// 			steps {
+// 				sh 'yarn build --mode production'
+// 				sh 'make docker-front'
+// 			}
+// 	 	}
+// 	}
 }
