@@ -44,5 +44,6 @@ pipeline {
 	}
 	steps {
 	  sh 'yarn build --mode production'
+	  sh 'make docker-front'
 	}
 }
