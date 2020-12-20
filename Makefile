@@ -15,6 +15,10 @@ VERSION = `poetry run python get_version.py`
 install:
 	poetry install
 
+docker_lint:
+	POETRY =
+	$(lint)
+
 format:
 	$(isort)
 	$(black)

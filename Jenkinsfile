@@ -10,7 +10,7 @@ pipeline {
     }
     stage('Lint') {
             steps {
-                sh 'make format lint'
+                sh 'make docker_lint'
             }
         }
         stage('Test') {
