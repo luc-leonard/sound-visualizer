@@ -2,7 +2,7 @@ pipeline {
 	agent {
 	  docker {
 	    image 'python:3.9-buster'
-	    args '-V $HOME/.pip:/pip-cache'
+	    args '-v $HOME/.pip:/pip-cache'
 	   }
 	}
 
