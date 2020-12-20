@@ -30,9 +30,11 @@ lint:
 	$(POETRY) mypy .
 
 .PHONY: docker
-docker:
+docker-api:
 	docker build  -f docker/Dockerfile_api -t lucleonard/sound-visualizer-api:$(VERSION) -t lucleonard/sound-visualizer-api:latest .
+docker-worker:
 	docker build  -f docker/Dockerfile_worker -t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
+docker-front:
 	docker build  -f docker/Dockerfile_front -t lucleonard/sound-visualizer-front:$(VERSION) -t lucleonard/sound-visualizer-front:latest .
 
 publish:
