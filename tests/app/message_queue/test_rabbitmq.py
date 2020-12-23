@@ -1,34 +1,32 @@
 import pika
 import pytest
 
-import docker
 from sound_visualizer.app.message_queue.message_queue import Message
 from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, RabbitMqPublisher
-from tests.util import docker_opts, service_hostname, try_until
+from tests.util import service_hostname, start_container, try_until
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def rabbitmq():
-    client = docker.from_env()
-    rabbit_container = client.containers.run('rabbitmq:3', name='rabbit', **docker_opts(port=5672))
+    service = start_container(image='rabbitmq:3', service_port=5672)
 
     def rabbit_ok():
         con = pika.BlockingConnection(
-            pika.ConnectionParameters(host=service_hostname(rabbit_container.name), port=5672)
+            pika.ConnectionParameters(host=service_hostname(service.host), port=service.port)
         )
         con.close()
         return True
 
-    try_until(rabbit_ok, 100, 10000).catch(lambda ex: rabbit_container.stop()).get()
+    try_until(rabbit_ok, 100, 10000).catch(lambda ex: service.container.stop()).get()
 
-    yield rabbit_container
-    rabbit_container.stop()
+    yield service
+    service.container.stop()
 
 
 @pytest.fixture()
 def connection(rabbitmq):
     return pika.BlockingConnection(
-        pika.ConnectionParameters(host=service_hostname(rabbitmq.name), port=5672)
+        pika.ConnectionParameters(host=service_hostname(rabbitmq.host), port=rabbitmq.port)
     )
 
 
