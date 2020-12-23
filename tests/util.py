@@ -3,6 +3,7 @@ import random
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict
+from uuid import uuid4
 
 import numpy as np
 from docker.models.containers import Container
@@ -62,12 +63,6 @@ def docker_opts(host_port: int, service_port: int) -> Dict[str, Any]:
     return opts
 
 
-def service_hostname(service_name: str) -> str:
-    if in_docker():
-        return service_name
-    return 'localhost'
-
-
 class Service:
     def __init__(self, container: Container, host: str, port: int):
         self.container = container
@@ -82,9 +77,11 @@ def random_port() -> int:
 def start_container(image: str, service_port: int) -> Service:
     client = docker.from_env()
     port = random_port()
-
+    id = uuid4().hex
     container = client.containers.run(
-        image, **docker_opts(service_port=service_port, host_port=port)
+        image,
+        name=f'{image[0:image.find(":")]}-{id}',
+        **docker_opts(service_port=service_port, host_port=port),
     )
     if in_docker():
         return Service(container=container, host=container.name, port=service_port)

@@ -3,7 +3,7 @@ import pytest
 
 from sound_visualizer.app.message_queue.message_queue import Message
 from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, RabbitMqPublisher
-from tests.util import service_hostname, start_container, try_until
+from tests.util import start_container, try_until
 
 
 @pytest.fixture(scope='function')
@@ -12,11 +12,12 @@ def rabbitmq():
 
     def rabbit_ok():
         con = pika.BlockingConnection(
-            pika.ConnectionParameters(host=service_hostname(service.host), port=service.port)
+            pika.ConnectionParameters(host=service.host, port=service.port)
         )
         con.close()
         return True
 
+    print(f'connecting to {service.port}:{service.host}')
     try_until(rabbit_ok, 100, 10000).catch(lambda ex: service.container.stop()).get()
 
     yield service
@@ -26,7 +27,7 @@ def rabbitmq():
 @pytest.fixture()
 def connection(rabbitmq):
     return pika.BlockingConnection(
-        pika.ConnectionParameters(host=service_hostname(rabbitmq.host), port=rabbitmq.port)
+        pika.ConnectionParameters(host=rabbitmq.host, port=rabbitmq.port)
     )
 
 
