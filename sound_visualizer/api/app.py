@@ -76,6 +76,7 @@ def create_app(name):
         TilesResources(storage=app.storage, cache=app.cache),
         '/tiles/<string:result_id>/<int:x>.png',
     )
+    logger.info('CREATED APP')
     return app
 
 
