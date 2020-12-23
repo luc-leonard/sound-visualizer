@@ -1,37 +1,34 @@
-import random
-
 import pika
 import pytest
 
-import docker
 from sound_visualizer.app.message_queue.message_queue import Message
 from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, RabbitMqPublisher
-from tests.util import try_until
+from tests.util import start_container, try_until
 
 
-@pytest.fixture(scope='module')
-def port() -> int:
-    return random.randint(1500, 4500)
-
-
-@pytest.fixture(scope='module')
-def rabbitmq(port):
-    client = docker.from_env()
-    rabbit_container = client.containers.run('rabbitmq:3', ports={5672: port}, detach=True)
+@pytest.fixture(scope='function')
+def rabbitmq():
+    service = start_container(image='rabbitmq:3', service_port=5672)
 
     def rabbit_ok():
-        con = pika.BlockingConnection(pika.ConnectionParameters(port=port))
+        con = pika.BlockingConnection(
+            pika.ConnectionParameters(host=service.host, port=service.port)
+        )
         con.close()
         return True
 
-    try_until(rabbit_ok, 100, 10000).get()
-    yield rabbit_container
-    rabbit_container.stop()
+    print(f'connecting to {service.port}:{service.host}')
+    try_until(rabbit_ok, 100, 10000).catch(lambda ex: service.container.stop()).get()
+
+    yield service
+    service.container.stop()
 
 
 @pytest.fixture()
-def connection(rabbitmq, port):
-    return pika.BlockingConnection(pika.ConnectionParameters(port=port))
+def connection(rabbitmq):
+    return pika.BlockingConnection(
+        pika.ConnectionParameters(host=rabbitmq.host, port=rabbitmq.port)
+    )
 
 
 def test_rabbitmq(connection):

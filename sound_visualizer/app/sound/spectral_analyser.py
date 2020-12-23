@@ -72,6 +72,7 @@ class SpectralAnalyzer(BaseModel):
 
 
 def get_hop_size(frame_size, overlap_factor):
+
     hop_size = int(int(frame_size - np.floor(overlap_factor * frame_size)) / 2)
     return int(hop_size)
 

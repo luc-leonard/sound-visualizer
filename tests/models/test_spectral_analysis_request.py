@@ -1,25 +1,24 @@
 import pymongo
 import pytest
 
-import docker
 from sound_visualizer.models.spectral_analysis_parameters import SpectralAnalysisParameters
 from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,
     SpectralAnalysisFlowORM,
 )
+from tests.util import start_container
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def mongo():
-    client = docker.from_env()
-    mongo_container = client.containers.run('mongo', ports={27017: 4242}, detach=True)
-    yield mongo_container
-    mongo_container.stop()
+    service = start_container(image='mongo', service_port=27017)
+    yield service
+    service.container.kill()
 
 
 @pytest.fixture()
 def mongo_client(mongo):
-    return pymongo.MongoClient('localhost', 4242)
+    return pymongo.MongoClient(mongo.host, mongo.port)
 
 
 def test_should_load(mongo_client):
@@ -30,6 +29,7 @@ def test_should_load(mongo_client):
         parameters=SpectralAnalysisParameters(overlap_factor=0.90, frame_size_power=12),
     )
     orm.save_request(analysis)
+
     assert orm.load_all_requests()[0] == analysis
 
 

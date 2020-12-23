@@ -35,15 +35,19 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 WORKDIR $PYSETUP_PATH
 COPY ./poetry.lock pyproject.toml ./
-RUN poetry update install --no-dev
+RUN poetry update install
 
 FROM python:3.9-slim as prod
 COPY --from=builder "/opt/pysetup" "/opt/pysetup"
-COPY . /app/
+
+COPY ./tests /app/tests
+COPY ./sound_visualizer/ /app/sound_visualizer
+COPY vendor/ffmpeg /bin/ffmpeg
+
 WORKDIR /app/
 ENV _IN_DOCKER=1
 ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
-EXPOSE 80
-ENTRYPOINT ["gunicorn", "-c", "gunicorn_docker_config.py", "sound_visualizer.api.web.main_web:app"]
+RUN ls -l
+CMD ["pytest"]

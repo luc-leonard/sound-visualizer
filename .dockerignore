@@ -5,7 +5,9 @@ sound_visualizer/main.py
 .ipynb_checkpoints
 .mypy_cache
 .idea
+.git
 __pycache__
 .pytest_cache
 for_docker/
 for_heroku/
+static/node_modules/
