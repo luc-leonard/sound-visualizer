@@ -9,7 +9,14 @@ pipeline {
 	}
 
     stages {
-		stage('lint') {
+		stage('install deps') {
+		  steps {
+			sh 'pwd'
+			sh 'ls -l'
+			sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
+		  }
+		}
+		stage('Lint') {
 				steps {
 					sh 'make docker_lint'
 				}

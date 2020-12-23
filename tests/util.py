@@ -36,6 +36,7 @@ def try_until(predicate, delay_between_try_ms, max_delay_ms) -> Promise:
 
 
 def docker_network() -> str:
+    # this env var is set by the docker file. maybe there is a cleaner way to do this ?
     in_docker = os.environ.get('_IN_DOCKER')
     if in_docker is not None:
         return 'sound-visualizer-testing-network'
