@@ -9,7 +9,6 @@ pipeline {
 	}
 
     stages {
-
 		stage('install deps') {
 		  steps {
 			sh 'pwd'
@@ -24,7 +23,7 @@ pipeline {
 			}
 		stage ('test') {
 			steps {
-				sh 'pytest'
+				sh 'make test'
 			}
 		}
 		stage('build docker image') {
@@ -32,19 +31,5 @@ pipeline {
 					sh 'make docker-api docker-worker'
 				}
 		}
-		stage ('yarn build') {
-		   agent {
-			docker {
-					image 'node:15'
-					args '''-v $HOME/.node_module:/node_module
-							-v /var/run/docker.sock:/var/run/docker.sock \
-							-v /usr/bin/docker:/usr/bin/docker'''
-					}
-			}
-			steps {
-				sh 'yarn build --mode production'
-				sh 'make docker-front'
-			}
-	    }
    }
 }

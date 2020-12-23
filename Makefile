@@ -36,16 +36,9 @@ docker-worker:
 	docker build  -f docker/Dockerfile_worker -t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
 docker-front:
 	docker build  -f docker/Dockerfile_front -t lucleonard/sound-visualizer-front:$(VERSION) -t lucleonard/sound-visualizer-front:latest .
+docker-test:
+	docker build  -f docker/Dockerfile_tests -t lucleonard/sound-visualizer-tests:$(VERSION) -t lucleonard/sound-visualizer-tests:latest .
 
-publish:
-	docker push lucleonard/sound-visualizer-web:$(VERSION)
-	docker push lucleonard/sound-visualizer-web:latest
-
-	docker push lucleonard/sound-visualizer-worker:$(VERSION)
-	docker push lucleonard/sound-visualizer-worker:latest
-
-run_web:
-	gunicorn sound_visualizer.api.web.main_web:app --log-file -
-
-run_worker:
-	python sound_visualizer/api/worker/main_worker.py
+test: docker-test
+	- docker network create -d bridge sound-visualizer-testing-network
+	docker run --network sound-visualizer-testing-network  -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker lucleonard/sound-visualizer-tests:latest
