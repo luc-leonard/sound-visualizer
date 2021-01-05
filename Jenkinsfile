@@ -11,39 +11,42 @@ pipeline {
 	   }
 	}
 
- stage('ALL') {
-    stages {
-    	when { changeset "sound_visualizer/*"}
+stages {
+	 stage('ALL') {
+		stages {
+			when { changeset "sound_visualizer/*"}
 
-		stage('install deps') {
-		  steps {
-			sh 'pwd'
-			sh 'ls -l'
-			sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
-			sh 'cp ./vendor/ffmpeg /bin/ffmpeg'
-		  }
-		}
-		stage('Lint') {
+			stage('install deps') {
+			 	steps {
+					sh 'pwd'
+					sh 'ls -l'
+					sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
+					sh 'cp ./vendor/ffmpeg /bin/ffmpeg'
+			  	}
+			}
+			stage('Lint') {
 				steps {
 					sh 'make docker_lint'
 				}
 			}
-		stage ('test') {
-			steps {
-				sh 'pytest'
+			stage ('test') {
+				steps {
+					sh 'pytest'
+				}
 			}
-		}
-		stage('build docker image') {
-		 when { branch 'master' }
+			stage('build docker image') {
+			 	when { branch 'master' }
 				steps {
 					sh 'make docker-api docker-worker'
 				}
+			}
+			stage('deploy') {
+			 	when { branch 'master' }
+			 	steps {
+
+			 	}
+			}
 		}
-		stage('deploy') {
-		 when { branch 'master' }
-		 steps {
-		 }
-		}
-   	}
-   }
+	   }
+	}
 }
