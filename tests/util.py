@@ -2,12 +2,11 @@ import os
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Optional, TypeVar
 from uuid import uuid4
 
 import numpy as np
 from docker.models.containers import Container
-from promise import Promise
 
 import docker
 
@@ -20,24 +19,27 @@ def generate_sound(frequency, duration_second, sample_rate):
     return np.sin(ts)
 
 
+T = TypeVar('T')
+
+
 # noinspection PyBroadException
-def try_until(predicate, delay_between_try_ms, max_delay_ms) -> Promise:
+def try_until(function: Callable[[], T], delay_between_try_ms: int, max_delay_ms: int) -> T:
     begin_time = datetime.now()
     end_time = begin_time + timedelta(milliseconds=max_delay_ms)
 
-    while True:
+    last_exception: Optional[Exception] = None
+    while datetime.now() < end_time:
         try:
-            b = predicate()
-            if b:
-                print(f'predicate OK after {datetime.now() - begin_time}')
-                return Promise.resolve(True)
+            r = function()
+            print(f'predicate OK after {datetime.now() - begin_time}')
+            return r
         except Exception as ex:
-            if datetime.now() >= end_time:
-                return Promise.reject(ex)
+            last_exception = ex
             time.sleep(delay_between_try_ms / 1000)
-        # too much time, but no exception
-        if datetime.now() >= end_time:
-            return Promise.reject(TimeoutError())
+
+    if last_exception is not None:
+        raise last_exception
+    raise TimeoutError()
 
 
 def docker_network() -> str:
