@@ -11,9 +11,11 @@ pipeline {
 	   }
 	}
 
-  when { changeset "static/*"}
+
 
     stages {
+    stage('ALL') {
+    	when { changeset "static/*"}
 		stage('install deps') {
 		  steps {
 
@@ -35,4 +37,5 @@ pipeline {
 				}
 		}
    }
+  }
 }
