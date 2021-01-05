@@ -16,23 +16,23 @@ pipeline {
 
 			stages {
 				stage('install deps') {
-				  steps {
-
-				  }
+					steps {
+						sh 'yarn install'
+				  	}
 				}
 				stage('Lint') {
-						steps {
-
-						}
+					steps {
+						sh 'echo lint'
 					}
+				}
 				stage ('test') {
 					steps {
-
+						sh 'echo test'
 					}
 				}
 				stage('build docker image') {
 						steps {
-							sh 'yarn install'
+							sh 'yarn build'
 						}
 				}
 			}
