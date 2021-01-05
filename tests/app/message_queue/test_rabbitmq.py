@@ -9,26 +9,21 @@ from tests.util import start_container, try_until
 @pytest.fixture(scope='function')
 def rabbitmq():
     service = start_container(image='rabbitmq:3', service_port=5672)
-
-    def rabbit_ok():
-        con = pika.BlockingConnection(
-            pika.ConnectionParameters(host=service.host, port=service.port)
-        )
-        con.close()
-        return True
-
-    print(f'connecting to {service.port}:{service.host}')
-    try_until(rabbit_ok, 100, 10000).catch(lambda ex: service.container.stop()).get()
-
     yield service
     service.container.stop()
 
 
 @pytest.fixture()
 def connection(rabbitmq):
-    return pika.BlockingConnection(
-        pika.ConnectionParameters(host=rabbitmq.host, port=rabbitmq.port)
-    )
+    print(f'connecting to {rabbitmq.port}:{rabbitmq.host}')
+
+    def connect_rabbit() -> pika.BlockingConnection:
+        con = pika.BlockingConnection(
+            pika.ConnectionParameters(host=rabbitmq.host, port=rabbitmq.port)
+        )
+        return con
+
+    return try_until(connect_rabbit, 100, 100000)
 
 
 def test_rabbitmq(connection):
