@@ -3,8 +3,10 @@ pipeline {
 	  docker {
 	  	image 'python:3.9-buster'
 	    args '''-v $HOME/.pip:/pip-cache
-	          -v /var/run/docker.sock:/var/run/docker.sock \
-	          -v /usr/bin/docker:/usr/bin/docker'''
+	          -v /var/run/docker.sock:/var/run/docker.sock
+	          -v /usr/bin/docker:/usr/bin/docker
+	          --network sound-visualizer-testing-network
+	          '''
 	   }
 	}
 
@@ -23,7 +25,7 @@ pipeline {
 			}
 		stage ('test') {
 			steps {
-				sh 'make test'
+				sh 'pytest'
 			}
 		}
 		stage('build docker image') {
