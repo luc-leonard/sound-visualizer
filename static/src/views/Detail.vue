@@ -1,6 +1,9 @@
 <template>
   <div class="home">
-    <h1>Last spectrograms</h1> <div @click="close">X</div>
+    <h1>Last spectrograms</h1>
+    <button @click="close" type="button" class="close" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
     <SingleElementDetail v-if="element != null" :element="element"></SingleElementDetail>
   </div>
 </template>

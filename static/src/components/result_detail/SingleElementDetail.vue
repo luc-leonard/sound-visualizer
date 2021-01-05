@@ -110,10 +110,6 @@ export default class SingleElementDetail extends Vue {
 </script>
 
 <style module>
-.map {
-  height: 510px;
-}
-
 .player {
   border: 1px solid yellow;
 }

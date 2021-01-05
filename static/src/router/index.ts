@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
-import SingleElement from "@/views/SingleElement.vue";
+import Detail from "@/views/Detail.vue";
 
 Vue.use(VueRouter)
 
@@ -14,7 +14,7 @@ const routes: Array<RouteConfig> = [
   {
     name: 'render',
     path: '/render/:result_id',
-    component: SingleElement
+    component: Detail
   },
   {
     path: '/about',
