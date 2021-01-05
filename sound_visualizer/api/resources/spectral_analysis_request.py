@@ -17,8 +17,9 @@ def SpectralAnalysisRequestListResource(handler: SpectralAnalysisRequestHandler)
         def get(self) -> list:
             offset = int(request.args.get('offset', 0))
             length = int(request.args.get('length', -1))
+            status = request.args.get('status', None)
 
-            return [o.dict() for o in self.handler.get_all_requests(offset, length)]
+            return [o.dict() for o in self.handler.get_all_requests(offset, length, status=status)]
 
         def post(self) -> dict:
             logger.info(f'received request {request.json}')

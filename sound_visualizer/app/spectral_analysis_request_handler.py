@@ -25,8 +25,10 @@ class SpectralAnalysisRequestHandler:
         self.message_publisher = message_publisher
         self.storage = storage
 
-    def get_all_requests(self, offset: int, length: int) -> List[SpectralAnalysisFlow]:
-        return self.orm.load_all_requests(offset, length)
+    def get_all_requests(
+        self, offset: int, length: int, status: Optional[str]
+    ) -> List[SpectralAnalysisFlow]:
+        return self.orm.load_all_requests(offset, length, status=status)
 
     def get_request_by_id(self, id: str) -> Optional[SpectralAnalysisFlow]:
         return self.orm.load_request_by_id(id)

@@ -55,8 +55,15 @@ class SpectralAnalysisFlowORM:
             return None
         return SpectralAnalysisFlow(**data)
 
-    def load_all_requests(self, offset: int = 0, len: int = -1) -> List[SpectralAnalysisFlow]:
-        cursor = self._collection.find().sort('_id', pymongo.DESCENDING)
+    def load_all_requests(
+        self, offset: int = 0, len: int = -1, status: Optional[str] = None
+    ) -> List[SpectralAnalysisFlow]:
+        if status is None:
+            cursor = self._collection.find()
+        else:
+            cursor = self._collection.find({'status': status})
+
+        cursor = cursor.sort('_id', pymongo.DESCENDING)
 
         if len == -1:
             requests = cursor[offset:]

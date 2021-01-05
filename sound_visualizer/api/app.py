@@ -14,7 +14,6 @@ from sound_visualizer.api.resources.spectral_analysis_request import (
     SpectralAnalysisRequestListResource,
     SpectralAnalysisRequestResource,
 )
-from sound_visualizer.api.resources.spectral_analysis_result import SpectralAnalysisResultResource
 from sound_visualizer.api.resources.tiles_resource import TilesResources
 from sound_visualizer.app.cache import Cache
 from sound_visualizer.app.message_queue.rabbitmq import RabbitMqPublisher, make_connection
@@ -68,10 +67,6 @@ def create_app(name):
     )
     api.add_resource(SpectralAnalysisRequestResource(handler), '/request/<string:analysis_id>')
 
-    api.add_resource(
-        SpectralAnalysisResultResource(storage=app.storage, cache=app.cache, orm=app.orm),
-        '/result/<string:analysis_id>',
-    )
     api.add_resource(
         TilesResources(storage=app.storage, cache=app.cache),
         '/tiles/<string:result_id>/<int:x>.png',
