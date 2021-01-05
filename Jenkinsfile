@@ -11,10 +11,10 @@ pipeline {
 	   }
 	}
 
-
+ stage('ALL') {
     stages {
-    stage('ALL') {
     	when { changeset "sound_visualizer/*"}
+
 		stage('install deps') {
 		  steps {
 			sh 'pwd'

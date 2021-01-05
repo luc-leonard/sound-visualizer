@@ -11,31 +11,30 @@ pipeline {
 	   }
 	}
 
+	stage('ALL') {
+  		when { changeset "static/*"}
 
+    	stages {
+			stage('install deps') {
+			  steps {
 
-    stages {
-    stage('ALL') {
-    	when { changeset "static/*"}
-		stage('install deps') {
-		  steps {
+			  }
+			}
+			stage('Lint') {
+					steps {
 
-		  }
-		}
-		stage('Lint') {
+					}
+				}
+			stage ('test') {
 				steps {
 
 				}
 			}
-		stage ('test') {
-			steps {
-
+			stage('build docker image') {
+					steps {
+						sh 'yarn install'
+					}
 			}
-		}
-		stage('build docker image') {
-				steps {
-					sh 'yarn install'
-				}
-		}
-   }
-  }
+   		}
+ 	}
 }
