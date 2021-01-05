@@ -12,7 +12,12 @@ pipeline {
 	}
 	stages {
 		stage('ALL') {
-			when { changeset "static/*"}
+			when {
+	 			anyOf {
+	 				changeset "static/*";
+					branch 'main'
+	 			}
+	 		}
 
 			stages {
 				stage('install deps') {
@@ -32,7 +37,7 @@ pipeline {
 						sh 'echo test'
 					}
 				}
-				stage('build docker image') {
+				stage('build') {
 						steps {
 							dir('static') {
 								sh 'yarn build'
