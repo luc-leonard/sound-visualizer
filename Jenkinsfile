@@ -42,7 +42,7 @@ pipeline {
 				stage('deploy') {
 					when { branch 'master' }
 					steps {
-
+						sh 'echo deploy'
 					}
 				}
 			}
