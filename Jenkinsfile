@@ -10,7 +10,7 @@ pipeline {
 	          '''
 	   }
 	}
-
+	  when { changeset "sound_visualizer/*"}
 
     stages {
 		stage('install deps') {
@@ -32,9 +32,15 @@ pipeline {
 			}
 		}
 		stage('build docker image') {
+		 when { branch 'master' }
 				steps {
 					sh 'make docker-api docker-worker'
 				}
+		}
+		stage('deploy') {
+		 when { branch 'master' }
+		 steps {
+		 }
 		}
    }
 }
