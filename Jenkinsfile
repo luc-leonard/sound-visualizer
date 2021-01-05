@@ -11,12 +11,14 @@ pipeline {
 	   }
 	}
 
+
     stages {
 		stage('install deps') {
 		  steps {
 			sh 'pwd'
 			sh 'ls -l'
 			sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
+			sh 'cp ./vendor/ffmpeg /bin/ffmpeg'
 		  }
 		}
 		stage('Lint') {
