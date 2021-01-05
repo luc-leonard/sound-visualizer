@@ -13,7 +13,12 @@ pipeline {
 
 	stages {
 	 	stage('ALL') {
-	 		when { changeset "sound_visualizer/*"}
+	 		when {
+	 			anyOf {
+	 				changeset "sound_visualizer/*";
+					branch 'main'
+	 			}
+	 		}
 			stages {
 				stage('install deps') {
 					steps {
@@ -34,13 +39,13 @@ pipeline {
 					}
 				}
 				stage('build docker image') {
-					when { branch 'master' }
+					when { branch 'main' }
 					steps {
 						sh 'make docker-api docker-worker'
 					}
 				}
 				stage('deploy') {
-					when { branch 'master' }
+					when { branch 'main' }
 					steps {
 						sh 'echo deploy'
 					}
