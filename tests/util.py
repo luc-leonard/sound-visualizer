@@ -2,7 +2,7 @@ import os
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, TypeVar, Optional
+from typing import Any, Callable, Dict, Optional, TypeVar
 from uuid import uuid4
 
 import numpy as np
