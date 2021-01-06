@@ -1,25 +1,30 @@
 <template>
-  <div class="new-spectral-form">
-    <div class="input-group">
-      <span class="input-group-addon" id="basic-addon1">URL</span>
-      <input type="text" class="form-control" v-model="url"/>
+  <div class="new-spectral-form container">
+    <div class="mb-5 gx-1">
+      <form>
+        <div class="">
+          <span class="form-label">URL</span>
+          <input type="text" class="form-control" v-model="url"/>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <span class="form-label">frame size</span>
+            <input class="form-control" v-model="frame_size"/>
+          </div>
+          <div class="col-md-6">
+            <span class="form-label">overlap factor</span>
+            <input class="form-control" v-model="overlap_factor"/>
+          </div>
+        </div>
+        <button @click="compute" class="btn btn-primary">COMPUTE</button>
+<!--        <div class="card">{{ compute_result }}</div>-->
+      </form>
     </div>
-    <div class="input-group">
-      <span class="input-group-addon" id="basic-addon1">frame size</span>
-      <input class="form-control" v-model="frame_size"/>
-    </div>
-    <div class="input-group">
-      <span class="input-group-addon" id="basic-addon1">overlap factor</span>
-      <input class="form-control" v-model="overlap_factor"/>
-    </div>
-    <button @click="compute">COMPUTE</button>
-
-    <div class="well">{{ compute_result }}</div>
   </div>
 </template>
 
 <script lang="ts">
-import {Vue, Component} from "vue-property-decorator";
+import {Component, Vue} from "vue-property-decorator";
 import Axios from "axios";
 
 @Component({
@@ -51,7 +56,7 @@ export default class NewSpectralForm extends Vue {
 
   poll_result() {
     setTimeout(() => {
-      Axios.get(process.env.VUE_APP_BASE_API_URL + '/result/' + this.current_result_id)
+      Axios.get(process.env.VUE_APP_BASE_API_URL + '/request/' + this.current_result_id)
           .then((response) => {
             if (response.data.status == 'finished') {
               this.$emit('finished', {'new_result': response.data})

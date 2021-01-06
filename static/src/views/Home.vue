@@ -2,7 +2,6 @@
   <div class="home">
     <h1>New Spectrogram ?</h1>
     <NewSpectralForm @finished="update_list"></NewSpectralForm>
-    <h1>Last spectrograms</h1>
     <SpectralAnalysisFlowList :element-list="last_elements" @click="onClick"></SpectralAnalysisFlowList>
   </div>
 </template>
@@ -33,7 +32,7 @@ export default class extends Vue {
 
   update_list() {
     Axios
-        .get(process.env.VUE_APP_BASE_API_URL + '/requests/')
+        .get(process.env.VUE_APP_BASE_API_URL + '/requests/?status=finished')
         .then(response => {
               this.last_elements = response.data;
             }

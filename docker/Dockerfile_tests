@@ -50,4 +50,4 @@ ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 RUN ls -l
-CMD ["pytest"]
+ENTRYPOINT ["pytest"]
