@@ -1,5 +1,7 @@
+import time
 from asyncio import new_event_loop
 from asyncio.futures import Future
+from threading import Thread
 from typing import Callable, List
 
 import pika
@@ -11,6 +13,16 @@ from sound_visualizer.app.message_queue.message_queue import (
     MessageQueuePublisher,
 )
 from sound_visualizer.config import Config
+
+
+def heartbeat(connection: pika.BlockingConnection):
+    while True:
+        time.sleep(15)
+        # it is likely that a better way exists
+        try:
+            connection.channel().close()
+        except Exception:
+            ...
 
 
 def make_connection(config: Config) -> pika.BlockingConnection:
@@ -28,7 +40,10 @@ def make_connection(config: Config) -> pika.BlockingConnection:
     )
     if credentials is not None:
         parameters.credentials = credentials
-    return pika.BlockingConnection(parameters)
+    con = pika.BlockingConnection(parameters)
+    hearbeat_thread = Thread(target=heartbeat, args=[con])
+    hearbeat_thread.start()
+    return con
 
 
 class RabbitMqPublisher(MessageQueuePublisher):
