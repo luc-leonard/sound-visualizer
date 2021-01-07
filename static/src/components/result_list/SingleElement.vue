@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header" @click="$emit('click', element)">
-      <a href="#">{{ element.title }}</a>
+      <router-link :to="link_to_detail">{{ element.title }}</router-link>
     </div>
     <div class="card-body">
       <img :src="thumbnail_url()" :alt="element.parameters.youtube_url"/>
@@ -34,6 +34,10 @@ export default class SingleElement extends Vue {
 
   first_tile_url() {
     return this.make_url(process.env.VUE_APP_BASE_API_URL) + '/0.png'
+  }
+
+  link_to_detail() {
+    return {name: 'render', params: {'result_id': this.element.id}};
   }
 
   make_url(base_url: string) {
