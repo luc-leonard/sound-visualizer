@@ -22,6 +22,7 @@ from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlowORM,
 )
 from sound_visualizer.utils import StopWatch
+from sound_visualizer.utils.google_cloud import init_google_cloud
 from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
@@ -134,6 +135,7 @@ orm = SpectralAnalysisFlowORM(db)
 
 if __name__ == '__main__':
     init_logger()
+    init_google_cloud(config)
     connection = make_connection(config)
     sound_storage = GoogleCloudStorage('sound_analyser-sounds')
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
