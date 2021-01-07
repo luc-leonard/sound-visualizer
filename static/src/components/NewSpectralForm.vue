@@ -16,9 +16,10 @@
             <input class="form-control" v-model="overlap_factor"/>
           </div>
         </div>
-        <button @click="compute" class="btn btn-primary">COMPUTE</button>
+
 <!--        <div class="card">{{ compute_result }}</div>-->
       </form>
+      <button @click="compute" class="btn btn-primary">COMPUTE</button>
     </div>
   </div>
 </template>

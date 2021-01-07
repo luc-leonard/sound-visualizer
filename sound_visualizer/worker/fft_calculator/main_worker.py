@@ -1,7 +1,6 @@
 import io
 import json
 import logging
-import random
 from typing import Generator
 
 import numpy as np
@@ -11,8 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from PIL import Image
 
-from sound_visualizer.app.converter import Mp3Converter
-from sound_visualizer.app.downloader.youtube import YoutubeDownloader
+from sound_visualizer.app.converter import FFMPEGConverter
 from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
 from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, make_connection
 from sound_visualizer.app.sound import SpectralAnalyzer
@@ -74,22 +72,15 @@ def save_youtube_title(request: SpectralAnalysisFlow):
 
 def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, None, None]:
     stopwatch = StopWatch()
-    orm.update_request_status(request.id, 'downloading')
-    if request.parameters.youtube_url is not None and len(request.parameters.youtube_url) == 0:
-        filename = '/tmp/' + str(random.randint(0, 255))
-        with stopwatch:
-            download_file(request.parameters.filename, filename)
-        logger.info(f"downloaded {request.parameters.filename} in {stopwatch.interval}s")
-    else:
-        with stopwatch:
-            filename = YoutubeDownloader().download(request.parameters.youtube_url)
-            save_youtube_title(request)
-        orm.add_stopwatch(request.id, 'download', stopwatch.interval)
+
+    mp3_filename = '/tmp/' + request.id
+    with open(mp3_filename, 'wb') as f:
+        sound_storage.download_to(request.id, f)
+
     with stopwatch:
-        orm.update_request_status(request.id, 'converting')
-        wav_filename = Mp3Converter(filename=filename).convert()
+        wav_filename = FFMPEGConverter(filename=mp3_filename).convert('wav')
     orm.add_stopwatch(request.id, 'convert', stopwatch.interval)
-    logger.info(f"converted {filename} to {wav_filename} in {stopwatch.interval}s")
+    logger.info(f"converted {mp3_filename} to {wav_filename} in {stopwatch.interval}s")
     orm.update_request_status(request.id, 'analysing')
 
     sound_reader = SoundReader(filename=wav_filename)
@@ -144,9 +135,10 @@ orm = SpectralAnalysisFlowORM(db)
 if __name__ == '__main__':
     init_logger()
     connection = make_connection(config)
+    sound_storage = GoogleCloudStorage('sound_analyser-sounds')
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
     subscriber = RabbitMqConsumer(connection)
-    streaming_pull_future = subscriber.consume('render-request', callback=callback)
+    streaming_pull_future = subscriber.consume('uploaded-sound', callback=callback)
     with subscriber:
         try:
             streaming_pull_future.result()

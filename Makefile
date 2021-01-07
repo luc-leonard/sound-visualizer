@@ -29,11 +29,19 @@ lint:
 	$(POETRY) $(black) --check --diff
 	$(POETRY) mypy .
 
-.PHONY: docker
+
 docker-api:
 	docker build  -f docker/Dockerfile_api -t lucleonard/sound-visualizer-api:$(VERSION) -t lucleonard/sound-visualizer-api:latest .
+
 docker-worker:
-	docker build  -f docker/Dockerfile_worker -t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
+	docker build  -f docker/Dockerfile_worker \
+			--build-arg WORKER_MAIN=sound_visualizer/worker/fft_calculator/main_worker.py \
+			-t lucleonard/sound-visualizer-worker:$(VERSION) -t lucleonard/sound-visualizer-worker:latest .
+
+	docker build  -f docker/Dockerfile_worker \
+			--build-arg WORKER_MAIN=sound_visualizer/worker/downloader/main_worker.py \
+ 			-t lucleonard/sound-visualizer-downloader:$(VERSION) -t lucleonard/sound-visualizer-downloader:latest .
+
 docker-front:
 	docker build  -f docker/Dockerfile_front -t lucleonard/sound-visualizer-front:$(VERSION) -t lucleonard/sound-visualizer-front:latest .
 docker-test:
