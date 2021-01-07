@@ -69,10 +69,10 @@ orm = SpectralAnalysisFlowORM(db)
 
 if __name__ == '__main__':
     init_logger()
-    connection = make_connection(config)
+
     storage = GoogleCloudStorage('sound_analyser-sounds')
-    subscriber = RabbitMqConsumer(connection)
-    publisher = RabbitMqPublisher(connection)
+    subscriber = RabbitMqConsumer(make_connection(config))
+    publisher = RabbitMqPublisher(make_connection(config, heartbeat=True))
     streaming_pull_future = subscriber.consume('render-request', callback=callback)
     with subscriber:
         try:

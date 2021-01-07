@@ -15,7 +15,7 @@ from sound_visualizer.app.message_queue.message_queue import (
 from sound_visualizer.config import Config
 
 
-def heartbeat(connection: pika.BlockingConnection):
+def _heartbeat(connection: pika.BlockingConnection):
     while True:
         time.sleep(15)
         # it is likely that a better way exists
@@ -25,7 +25,7 @@ def heartbeat(connection: pika.BlockingConnection):
             ...
 
 
-def make_connection(config: Config) -> pika.BlockingConnection:
+def make_connection(config: Config, heartbeat: bool = False) -> pika.BlockingConnection:
     credentials = None
     if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
         credentials = pika.PlainCredentials(
@@ -41,8 +41,9 @@ def make_connection(config: Config) -> pika.BlockingConnection:
     if credentials is not None:
         parameters.credentials = credentials
     con = pika.BlockingConnection(parameters)
-    hearbeat_thread = Thread(target=heartbeat, args=[con])
-    hearbeat_thread.start()
+    if heartbeat:
+        hearbeat_thread = Thread(target=_heartbeat, args=[con])
+        hearbeat_thread.start()
     return con
 
 
