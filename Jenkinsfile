@@ -24,7 +24,7 @@ pipeline {
 			steps {
 				sh 'git remote -v'
 				sh 'git fetch -a'
-				sh 'git remote set-head origin master'
+				sh 'git remote set-head origin main'
 				sh 'git branch --list --remote'
 			}
 		}
