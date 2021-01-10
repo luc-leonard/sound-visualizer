@@ -21,9 +21,8 @@ pipeline {
 	stages {
 		stage('PRE_BUILD') {
 			steps {
-				sh 'git remote -v'
-				sh 'git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main'
-				sh 'git  branch -a'
+				sh 'git config --add remote.origin.fetch +refs/heads/main:refs/remotes/origin/main'
+				sh 'git fetch --no-tags'
 			}
 		}
 		stage('ALL') {
