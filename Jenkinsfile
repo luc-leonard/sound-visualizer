@@ -64,6 +64,10 @@ pipeline {
 
 					steps {
 						sh 'echo deploy'
+						sh '''ls
+						 -l
+						 /'''
+
 						sh '''docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.projects.luc-leonard.fr
 						      --caproverPassword $CAPROVER_PASS
 						      --caproverApp sound-visualizer-api
