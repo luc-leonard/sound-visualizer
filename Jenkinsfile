@@ -15,6 +15,7 @@ pipeline {
 	          -v /var/run/docker.sock:/var/run/docker.sock
 	          -v /usr/bin/docker:/usr/bin/docker
 	          --network sound-visualizer-testing-network
+	          -e CAPROVER_PASS=$CAPROVER_PASS
 	          '''
 	   }
 	}
@@ -55,7 +56,6 @@ pipeline {
 					}
 				}
 				stage('build docker image') {
-					when { branch 'main' }
 					steps {
 						sh 'make docker-api docker-worker'
 					}
