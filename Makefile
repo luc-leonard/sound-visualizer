@@ -53,13 +53,13 @@ docker-test:
 
 
 docker-push:
-		docker build  -f docker/Dockerfile_front -t kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-front:latest .
+		docker tag lucleonard/sound-visualizer-front:latest kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-front:latest
 		docker image push kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-front:latest
 
-		docker build  -f docker/Dockerfile_front -t kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-api:latest .
+		docker tag lucleonard/sound-visualizer-api:latest kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-api:latest
 		docker image push kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-api:latest
 
-		docker build  -f docker/Dockerfile_front -t kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-worker:latest .
+		docker tag lucleonard/sound-visualizer-worker:latest kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-worker:latest
 		docker image push kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-worker:latest
 
 test: docker-test
