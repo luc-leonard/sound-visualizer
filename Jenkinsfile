@@ -1,3 +1,11 @@
+def boolean hasChangesIn(String module) {
+  return !env.CHANGE_TARGET || sh(
+    returnStatus: true,
+    script: "git diff --name-only origin/${env.CHANGE_TARGET} ${env.GIT_COMMIT} | grep ^${module}/"
+  ) == 0
+}
+
+
 pipeline {
 	agent {
 	  docker {
@@ -12,10 +20,18 @@ pipeline {
 	}
 
 	stages {
+		stage('PRE_BUILD') {
+			steps {
+				sh 'git config --add remote.origin.fetch +refs/heads/main:refs/remotes/origin/main'
+				sh 'git fetch --no-tags'
+			}
+		}
 	 	stage('ALL') {
 	 		when {
 	 			anyOf {
-	 				changeset "sound_visualizer/*";
+	 				 expression {
+   						 return hasChangesIn('sound_visualizer')
+  					}
 					branch 'main'
 	 			}
 	 		}

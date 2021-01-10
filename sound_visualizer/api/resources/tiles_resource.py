@@ -16,6 +16,6 @@ def TilesResources(storage: Storage, cache: Cache):
         def get(self, result_id: str, x: int):
             logger.info(vars())
             data = cached_storage.get(f'{result_id}_{x}')
-            return send_file(data, attachment_filename='_result.png', cache_timeout=10)
+            return send_file(data, attachment_filename='_result.png', cache_timeout=360)
 
     return TilesResourcesImpl

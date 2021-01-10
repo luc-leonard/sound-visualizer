@@ -48,4 +48,8 @@ ENV _IN_DOCKER=1
 ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
-CMD ["python", "sound_visualizer/worker/main_worker.py"]
+
+ARG WORKER_MAIN="sound_visualizer/worker/fft_calculator/main_worker.py"
+RUN echo "main = " $WORKER_MAIN
+ENV WORKER_MAIN ${WORKER_MAIN}
+CMD python ${WORKER_MAIN}

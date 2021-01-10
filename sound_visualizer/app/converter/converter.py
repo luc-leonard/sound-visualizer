@@ -10,5 +10,5 @@ class Converter(BaseModel):
     length_second: Optional[int] = -1
 
     @abstractmethod
-    def convert(self) -> str:
+    def convert(self, _format: str) -> str:
         pass

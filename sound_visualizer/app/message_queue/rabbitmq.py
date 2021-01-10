@@ -1,5 +1,7 @@
+import logging
 from asyncio import new_event_loop
 from asyncio.futures import Future
+from threading import Thread
 from typing import Callable, List
 
 import pika
@@ -24,11 +26,12 @@ def make_connection(config: Config) -> pika.BlockingConnection:
         host=config.rabbitmq_hostname,
         port=config.rabbitmq_port,
         virtual_host=config.rabbitmq_vhost,
-        heartbeat=15,
+        heartbeat=0,
     )
     if credentials is not None:
         parameters.credentials = credentials
-    return pika.BlockingConnection(parameters)
+    con = pika.BlockingConnection(parameters)
+    return con
 
 
 class RabbitMqPublisher(MessageQueuePublisher):
@@ -53,6 +56,8 @@ class RabbitMqMessage(Message):
 
 
 class RabbitMqConsumer(MessageQueueConsumer):
+    logger = logging.getLogger(__name__)
+
     def __enter__(self):
         self.event_loop.call_soon(self._start_consume)
         return self.event_loop.run_until_complete(self.future)
@@ -68,8 +73,23 @@ class RabbitMqConsumer(MessageQueueConsumer):
         self.tags: List[str] = []
 
     def consume(self, binding_key: str, callback: Callable[[Message], None]) -> Future:
+        # this is an array, so it can be updated in the closure below.
+        stop_consume = [False]
+
         def _callback(ch, method, properties, body):
-            callback(RabbitMqMessage(ch, method, properties, body))
+            def _start():
+                try:
+                    callback(RabbitMqMessage(ch, method, properties, body))
+                except BaseException as ex:
+                    self.logger.warning(f'{ex}')
+                    stop_consume[0] = True
+
+            callback_thread = Thread(target=_start, args=[])
+            callback_thread.start()
+            while callback_thread.is_alive():
+                self.channel.connection.sleep(0.1)
+            if stop_consume[0]:
+                self.channel.stop_consuming()
 
         self.tags.append(
             self.channel.basic_consume(

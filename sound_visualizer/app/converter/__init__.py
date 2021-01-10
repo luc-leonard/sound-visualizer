@@ -1,1 +1,1 @@
-from .mp3 import Mp3Converter
+from .FFMPEGConverter import FFMPEGConverter
