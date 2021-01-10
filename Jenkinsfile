@@ -24,6 +24,7 @@ pipeline {
 			steps {
 				sh 'git remote -v'
 				sh 'git fetch -a'
+				sh 'git branch --list --remote'
 			}
 		}
 	 	stage('ALL') {
