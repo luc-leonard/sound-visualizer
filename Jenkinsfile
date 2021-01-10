@@ -33,7 +33,7 @@ pipeline {
 	 		when {
 	 			anyOf {
 	 				 expression {
-   						 return hasChangesIn('sound-analyzer')
+   						 return hasChangesIn('sound_visualizer')
   					}
 					branch 'main'
 	 			}
