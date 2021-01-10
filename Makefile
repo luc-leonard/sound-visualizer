@@ -47,8 +47,20 @@ docker-worker:
 
 docker-front:
 	docker build  -f docker/Dockerfile_front -t lucleonard/sound-visualizer-front:$(VERSION) -t lucleonard/sound-visualizer-front:latest .
+
 docker-test:
 	docker build  -f docker/Dockerfile_tests -t lucleonard/sound-visualizer-tests:$(VERSION) -t lucleonard/sound-visualizer-tests:latest .
+
+
+docker-push:
+		docker build  -f docker/Dockerfile_front -t registry:5000/lucleonard/sound-visualizer-front:latest .
+		docker image push registry:5000/lucleonard/sound-visualizer-front:latest
+
+		docker build  -f docker/Dockerfile_front -t registry:5000/lucleonard/sound-visualizer-api:latest .
+		docker image push registry:5000/lucleonard/sound-visualizer-api:latest
+
+		docker build  -f docker/Dockerfile_front -t registry:5000/lucleonard/sound-visualizer-worker:latest .
+		docker image push registry:5000/lucleonard/sound-visualizer-worker:latest
 
 test: docker-test
 	- docker network create -d bridge sound-visualizer-testing-network
