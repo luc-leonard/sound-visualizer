@@ -1,7 +1,7 @@
 def boolean hasChangesIn(String module) {
   return !env.CHANGE_TARGET || sh(
     returnStatus: true,
-    script: "git diff --name-only origin/${env.CHANGE_TARGET}...${env.GIT_COMMIT} | grep ^${module}/"
+    script: "git diff --name-only origin/${env.CHANGE_TARGET} ${env.GIT_COMMIT} | grep ^${module}/"
   ) == 0
 }
 
