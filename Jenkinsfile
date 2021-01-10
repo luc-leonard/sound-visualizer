@@ -1,7 +1,7 @@
 def boolean hasChangesIn(String module) {
   return !env.CHANGE_TARGET || sh(
     returnStatus: true,
-    script: "git diff --name-only origin/${env.CHANGE_TARGET} ${env.GIT_COMMIT} | grep ^${module}/"
+    script: "git diff --name-only ${env.CHANGE_TARGET} ${env.GIT_COMMIT} | grep ^${module}/"
   ) == 0
 }
 
@@ -20,6 +20,11 @@ pipeline {
 	}
 
 	stages {
+		stage('PRE_BUILD') {
+			steps {
+				sh 'git checkout -b main origin/main'
+			}
+		}
 	 	stage('ALL') {
 	 		when {
 	 			anyOf {
