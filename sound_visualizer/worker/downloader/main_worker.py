@@ -57,7 +57,11 @@ def callback(message):
         logger.info(f'request = {request}')
         orm.update_request_status(request.id, 'beginning')
         download_sound(request)
-        publisher.publish('uploaded-sound', request.json().encode('utf-8'))
+
+        def _publish():
+            publisher.publish('uploaded-sound', request.json().encode('utf-8'))
+
+        publisher.channel.connection.add_callback_threadsafe(_publish)
     except Exception as e:
         logger.error('error handling message', exc_info=e)
 
@@ -71,8 +75,11 @@ if __name__ == '__main__':
     init_logger()
 
     storage = GoogleCloudStorage('sound_analyser-sounds')
-    subscriber = RabbitMqConsumer(make_connection(config))
-    publisher = RabbitMqPublisher(make_connection(config, heartbeat=True))
+    connection = make_connection(config)
+    # two connections are needed since we cannot share them across threads.
+    subscriber = RabbitMqConsumer(connection)
+    publisher = RabbitMqPublisher(connection)
+
     streaming_pull_future = subscriber.consume('render-request', callback=callback)
     with subscriber:
         try:

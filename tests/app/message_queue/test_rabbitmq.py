@@ -34,8 +34,8 @@ def test_rabbitmq(connection):
     publisher.publish('foobar', 'hello !')
 
     def callback(message: Message):
-        consumer.close()
-        assert message.data == 'hello!'
+        assert message.data == b'hello!'
+        raise BaseException()  # forces chan to close
 
     consumer.consume('foobar', callback)
     with consumer:

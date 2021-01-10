@@ -136,7 +136,7 @@ orm = SpectralAnalysisFlowORM(db)
 if __name__ == '__main__':
     init_logger()
     init_google_cloud(config)
-    connection = make_connection(config, heartbeat=False)
+    connection = make_connection(config)
     sound_storage = GoogleCloudStorage('sound_analyser-sounds')
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
     subscriber = RabbitMqConsumer(connection)

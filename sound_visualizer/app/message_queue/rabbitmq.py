@@ -1,4 +1,4 @@
-import time
+import logging
 from asyncio import new_event_loop
 from asyncio.futures import Future
 from threading import Thread
@@ -15,17 +15,7 @@ from sound_visualizer.app.message_queue.message_queue import (
 from sound_visualizer.config import Config
 
 
-def _heartbeat(connection: pika.BlockingConnection):
-    while True:
-        time.sleep(15)
-        # it is likely that a better way exists
-        try:
-            connection.channel().close()
-        except Exception:
-            ...
-
-
-def make_connection(config: Config, heartbeat: bool = False) -> pika.BlockingConnection:
+def make_connection(config: Config) -> pika.BlockingConnection:
     credentials = None
     if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
         credentials = pika.PlainCredentials(
@@ -36,14 +26,11 @@ def make_connection(config: Config, heartbeat: bool = False) -> pika.BlockingCon
         host=config.rabbitmq_hostname,
         port=config.rabbitmq_port,
         virtual_host=config.rabbitmq_vhost,
-        heartbeat=15,
+        heartbeat=0,
     )
     if credentials is not None:
         parameters.credentials = credentials
     con = pika.BlockingConnection(parameters)
-    if heartbeat:
-        hearbeat_thread = Thread(target=_heartbeat, args=[con])
-        hearbeat_thread.start()
     return con
 
 
@@ -69,6 +56,8 @@ class RabbitMqMessage(Message):
 
 
 class RabbitMqConsumer(MessageQueueConsumer):
+    logger = logging.getLogger(__name__)
+
     def __enter__(self):
         self.event_loop.call_soon(self._start_consume)
         return self.event_loop.run_until_complete(self.future)
@@ -85,7 +74,15 @@ class RabbitMqConsumer(MessageQueueConsumer):
 
     def consume(self, binding_key: str, callback: Callable[[Message], None]) -> Future:
         def _callback(ch, method, properties, body):
-            callback(RabbitMqMessage(ch, method, properties, body))
+            def _start():
+                try:
+                    callback(RabbitMqMessage(ch, method, properties, body))
+                except BaseException as ex:
+                    self.logger.warning(f'{ex}')
+                    self.channel.stop_consuming()
+
+            callback_thread = Thread(target=_start, args=[])
+            callback_thread.start()
 
         self.tags.append(
             self.channel.basic_consume(
