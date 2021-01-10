@@ -24,7 +24,7 @@ pipeline {
 			steps {
 				sh 'git remote -v'
 				sh 'git fetch -a'
-				sh 'git fetch --no-tags --force --progress -- https://github.com/luc-leonard/sound-visualizer.git +refs/main/head:refs/remotes/origin/main'
+				sh 'git pull'
 				sh 'git branch --list --remote'
 			}
 		}
