@@ -68,11 +68,11 @@ pipeline {
 						sh '''docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.projects.luc-leonard.fr \
 						      --caproverPassword $CAPROVER_PASS \
 						      --caproverApp sound-visualizer-api \
-						      --imageName lucleonard/soundvisualizer-api:latest'''
+						      --imageName lucleonard/sound-visualizer-api:latest'''
 						sh '''docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.projects.luc-leonard.fr \
 						      --caproverPassword $CAPROVER_PASS \
 						      --caproverApp sound-visualizer-worker \
-						      --imageName lucleonard/soundvisualizer-worker:latest'''
+						      --imageName lucleonard/sound-visualizer-worker:latest'''
 					}
 				}
 			}
