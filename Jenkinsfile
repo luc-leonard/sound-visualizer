@@ -1,3 +1,11 @@
+def boolean hasChangesIn(String module) {
+  return !env.CHANGE_TARGET || sh(
+    returnStatus: true,
+    script: "git diff --name-only origin/${env.CHANGE_TARGET}...${env.GIT_COMMIT} | grep ^${module}/"
+  ) == 0
+}
+
+
 pipeline {
 	agent {
 	  docker {
@@ -15,7 +23,9 @@ pipeline {
 	 	stage('ALL') {
 	 		when {
 	 			anyOf {
-	 				changeset "sound_visualizer/*";
+	 				 expression {
+   						 return hasChangesIn('sound-analyzer')
+  					}
 					branch 'main'
 	 			}
 	 		}
