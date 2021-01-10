@@ -23,7 +23,7 @@ pipeline {
 			steps {
 				sh 'git remote -v'
 				sh 'git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main'
-				sh 'git fetch -a'
+				sh 'git  branch -a'
 			}
 		}
 		stage('ALL') {

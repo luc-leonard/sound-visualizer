@@ -24,7 +24,7 @@ pipeline {
 			steps {
 				sh 'git remote -v'
 				sh 'git fetch -a'
-				sh 'git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main'
+				sh 'git remote set-head origin master'
 				sh 'git branch --list --remote'
 			}
 		}
