@@ -22,6 +22,7 @@ pipeline {
 	stages {
 		stage('PRE_BUILD') {
 			steps {
+				sh 'git remote -v'
 				sh 'git checkout -b main origin/main'
 			}
 		}
