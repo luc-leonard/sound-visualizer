@@ -23,7 +23,7 @@ pipeline {
 		stage('PRE_BUILD') {
 			steps {
 				sh 'git remote -v'
-				sh 'git checkout -b main origin/main'
+				sh 'git fetch -a'
 			}
 		}
 	 	stage('ALL') {
