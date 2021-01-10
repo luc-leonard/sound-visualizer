@@ -73,16 +73,23 @@ class RabbitMqConsumer(MessageQueueConsumer):
         self.tags: List[str] = []
 
     def consume(self, binding_key: str, callback: Callable[[Message], None]) -> Future:
+        # this is an array, so it can be updated in the closure below.
+        stop_consume = [False]
+
         def _callback(ch, method, properties, body):
             def _start():
                 try:
                     callback(RabbitMqMessage(ch, method, properties, body))
                 except BaseException as ex:
                     self.logger.warning(f'{ex}')
-                    self.channel.stop_consuming()
+                    stop_consume[0] = True
 
             callback_thread = Thread(target=_start, args=[])
             callback_thread.start()
+            while callback_thread.is_alive():
+                self.channel.connection.sleep(0.1)
+            if stop_consume[0]:
+                self.channel.stop_consuming()
 
         self.tags.append(
             self.channel.basic_consume(
