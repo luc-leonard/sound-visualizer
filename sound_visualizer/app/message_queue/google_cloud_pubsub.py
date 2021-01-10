@@ -10,6 +10,7 @@ from sound_visualizer.app.message_queue.message_queue import (
 )
 
 
+# fake change to trigger CI. to remove ;)
 class GoogleCloudPublisher(MessageQueuePublisher):
     def __init__(self, project_name: str):
         self.publisher = pubsub_v1.PublisherClient()
