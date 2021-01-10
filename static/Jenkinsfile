@@ -22,6 +22,7 @@ pipeline {
 		stage('PRE_BUILD') {
 			steps {
 				sh 'git remote -v'
+				sh 'git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main'
 				sh 'git fetch -a'
 			}
 		}
