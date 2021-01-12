@@ -23,6 +23,7 @@ pipeline {
 	stages {
 		stage('PRE_BUILD') {
 			steps {
+				// this allows us to reference trhe main branch
 				sh 'git config --add remote.origin.fetch +refs/heads/main:refs/remotes/origin/main'
 				sh 'git fetch --no-tags'
 			}
@@ -56,12 +57,13 @@ pipeline {
 					}
 				}
 				stage('build docker image') {
+					when { branch 'main'}
 					steps {
 						sh 'make docker-api docker-worker'
 					}
 				}
 				stage('deploy') {
-
+					when { branch 'main'}
 					steps {
 						sh 'echo deploy'
 						sh 'make docker-push'
