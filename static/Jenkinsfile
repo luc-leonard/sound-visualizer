@@ -22,6 +22,7 @@ pipeline {
 	stages {
 		stage('PRE_BUILD') {
 			steps {
+				// this allows us to reference trhe main branch
 				sh 'git config --add remote.origin.fetch +refs/heads/main:refs/remotes/origin/main'
 				sh 'git fetch --no-tags'
 			}
@@ -55,7 +56,7 @@ pipeline {
 					}
 				}
 				stage('build') {
-
+						when { branch 'main'}
 						steps {
 							dir('static') {
 								sh 'yarn build --mode production'
@@ -63,6 +64,7 @@ pipeline {
 						}
 				}
 				stage('deploy') {
+					when { branch 'main'}
 					steps {
 						sh 'make docker-front'
 						sh 'make docker-push'
