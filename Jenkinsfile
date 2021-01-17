@@ -40,7 +40,8 @@ pipeline {
 			stages {
 				stage('install deps') {
 					steps {
-						sh 'apt-get install libsndfile-dev'
+						sh 'apt-get update'
+						sh 'apt-get install -y libsndfile-dev'
 						sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
 						sh 'cp ./vendor/ffmpeg /bin/ffmpeg'
 					}
