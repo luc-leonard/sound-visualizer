@@ -1,7 +1,10 @@
+import pytest
+
 from sound_visualizer.app.sound import SoundReader
 from sound_visualizer.app.sound.separator import Separator
 
 
+@pytest.mark.skip()
 def test_separate():
     separator = Separator(model='spleeter:5stems')
     reader = SoundReader(
