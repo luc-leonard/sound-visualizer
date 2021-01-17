@@ -4,12 +4,13 @@ services:
   web:
     image: lucleonard/sound-visualizer-api:latest
     ports:
-      - "5001:80"
+      - "5000:80"
     env_file:
       - ../for_docker/config.env
     environment:
       - PYTHON_UNBUFFERED=1
       - APP_CORS_ORIGIN=http://localhost:8080
+      - APP_RABBITMQ_VHOST=sound_visualizer-dev
     volumes:
     - "../for_docker/sound-visualizer-credentials.json:/sound-visualizer-credentials.json"
 
@@ -19,5 +20,26 @@ services:
       - ../for_docker/config.env
     environment:
       - PYTHON_UNBUFFERED=1
+      - APP_RABBITMQ_VHOST=sound_visualizer-dev
+    volumes:
+        - "../for_docker/sound-visualizer-credentials.json:/sound-visualizer-credentials.json"
+
+  downloader-prod:
+    image: lucleonard/sound-visualizer-downloader:latest
+    env_file:
+      - ../for_docker/config.env
+    environment:
+      - PYTHON_UNBUFFERED=1
+    volumes:
+        - "../for_docker/sound-visualizer-credentials.json:/sound-visualizer-credentials.json"
+
+
+  worker:
+    image: lucleonard/sound-visualizer-worker:latest
+    env_file:
+      - ../for_docker/config.env
+    environment:
+      - PYTHON_UNBUFFERED=1
+      - APP_RABBITMQ_VHOST=sound_visualizer-dev
     volumes:
         - "../for_docker/sound-visualizer-credentials.json:/sound-visualizer-credentials.json"
