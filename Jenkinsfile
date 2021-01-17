@@ -41,7 +41,7 @@ pipeline {
 				stage('install deps') {
 					steps {
 						sh 'apt-get update'
-						sh 'apt-get install -y libsndfile-dev libblas-dev liblapack-dev'
+						sh 'apt-get install -y libsndfile-dev libblas-dev liblapack-dev gfortran'
 						sh 'pip install --cache-dir /pip-cache -r requirements_dev.txt'
 						sh 'cp ./vendor/ffmpeg /bin/ffmpeg'
 					}

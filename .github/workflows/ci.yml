@@ -24,10 +24,7 @@ jobs:
       - name: install systm deps
         run: |
            sudo apt-get update
-           sudo apt-get install -y libsndfile-dev libblas-dev liblapack-dev
-      - name: Install ffmpeg
-        run: |
-          sudo cp ./vendor/ffmpeg /bin/ffmpeg
+           sudo apt-get install -y libsndfile-dev libblas-dev liblapack-dev ffmpeg
 
       - name: Install Poetry
         uses: abatilo/actions-poetry@v2.0.0
