@@ -28,8 +28,8 @@ class SoundReader(BaseModel):
         sample_rate, data = wavfile.read(self.filename)
         logger.info(f'{self.filename} read in memory. sample_rate = {sample_rate}')
 
-        if len(data.shape) > 1:
-            data = data[:, 0]
+        # if len(data.shape) > 1:
+        #     data = data[:, 0]
         start_idx = self.start_second * sample_rate
         if self.length_second == -1:
             end_idx = data.shape[0] - 1

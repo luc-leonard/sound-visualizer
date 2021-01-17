@@ -25,7 +25,7 @@ environ-config = "^20.1"
 promise = "^2.3"
 # required for  mongodb+srv:// URIs
 dnspython = "^2.0.0"
-spleeter = "^2.1.2"
+spleeter-gpu = "^2.0.2"
 
 
 

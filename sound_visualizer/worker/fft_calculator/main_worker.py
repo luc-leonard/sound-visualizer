@@ -9,6 +9,7 @@ import pymongo
 import requests
 from bs4 import BeautifulSoup
 from PIL import Image
+from spleeter.separator import Separator
 
 from sound_visualizer.app.converter import FFMPEGConverter
 from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
@@ -82,9 +83,13 @@ def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, 
         wav_filename = FFMPEGConverter(filename=mp3_filename).convert('wav')
     orm.add_stopwatch(request.id, 'convert', stopwatch.interval)
     logger.info(f"converted {mp3_filename} to {wav_filename} in {stopwatch.interval}s")
+
+    orm.update_request_status(request.id, 'splitting')
+    sound_reader = SoundReader(filename=wav_filename)
+
+    # separated = separator.separate(sound_reader.get_data().data, sound_reader.get_data().sample_rate)
     orm.update_request_status(request.id, 'analysing')
 
-    sound_reader = SoundReader(filename=wav_filename)
     spectral_analyser = SpectralAnalyzer(
         frame_size=2 ** request.parameters.frame_size_power,
         overlap_factor=request.parameters.overlap_factor,
@@ -140,6 +145,7 @@ if __name__ == '__main__':
     sound_storage = GoogleCloudStorage('sound_analyser-sounds')
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
     subscriber = RabbitMqConsumer(connection)
+    separator = Separator('spleeter:5stems')
     streaming_pull_future = subscriber.consume('uploaded-sound', callback=callback)
     with subscriber:
         try:
