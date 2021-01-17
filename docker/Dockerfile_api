@@ -1,4 +1,4 @@
-FROM python:3.9-slim as builder
+FROM python:3.8-slim as builder
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         # deps for installing poetry
@@ -37,7 +37,7 @@ WORKDIR $PYSETUP_PATH
 COPY ./poetry.lock pyproject.toml ./
 RUN poetry update install --no-dev
 
-FROM python:3.9-slim as prod
+FROM python:3.8-slim as prod
 COPY --from=builder "/opt/pysetup" "/opt/pysetup"
 
 COPY ./gunicorn_docker_config.py /app/gunicorn_docker_config.py

@@ -132,4 +132,5 @@ def get_spectogram_data(
         logger.info(f'chunk size: {convert_size(np_get_real_size(local_frame))}')
         local_frame *= window_fn
         frame_fft_data = 10 * np.log(10) * np.abs(np.fft.rfft(local_frame))
+        # frame_fft_data = 10 * np.log(10) * np.abs(tf.signal.rfft(local_frame))
         yield frame_fft_data

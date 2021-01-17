@@ -1,9 +1,9 @@
 import logging
 from typing import Generator
 
-import numpy as np
 import PIL
-from PIL import Image, ImageEnhance, ImageFont, ImageOps
+import numpy as np
+from PIL import Image, ImageEnhance, ImageOps
 from pydantic import BaseModel
 
 from sound_visualizer.app.sound import SpectralAnalysis
@@ -35,9 +35,9 @@ class GreyScaleImageGenerator(BaseModel):
                 border=(self.border_width, 0, self.border_width, 0),
                 fill=self.border_color,
             )
-            image = ImageEnhance.Contrast(image).enhance(5.0)
+            image = ImageEnhance.Contrast(image).enhance(2.5)
 
-            ImageFont.load_default()
+            # ImageFont.load_default()
             # draw = ImageDraw.Draw(image)
             # begin_time_for_image = int(np.floor(spectral_analysis.time_domain[current_top]))
             # if current_top + image.height < len(spectral_analysis.time_domain):

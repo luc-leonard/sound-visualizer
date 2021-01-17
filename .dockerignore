@@ -11,3 +11,4 @@ __pycache__
 for_docker/
 for_heroku/
 static/node_modules/
+spleets
