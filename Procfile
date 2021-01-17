@@ -1,2 +1,3 @@
 web: gunicorn sound_visualizer.api.app:app --log-file -
-worker: python sound_visualizer/worker/main_worker.py
+downloader: python sound_visualizer/worker/downloader/main_worker.py
+fft_calculator: python sound_visualizer/worker/fft_calculator/main_worker.py

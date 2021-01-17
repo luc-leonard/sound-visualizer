@@ -3,18 +3,15 @@ import json
 import logging
 from typing import Generator
 
-import numpy as np
 import PIL
 import pymongo
-import requests
-from bs4 import BeautifulSoup
-from PIL import Image
-from spleeter.separator import Separator
 
 from sound_visualizer.app.converter import FFMPEGConverter
 from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
+from sound_visualizer.app.image.image_blender import greyscale_images_blender
 from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, make_connection
 from sound_visualizer.app.sound import SpectralAnalyzer
+from sound_visualizer.app.sound.separator import Separator
 from sound_visualizer.app.sound.sound_reader import SoundReader
 from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
@@ -27,49 +24,6 @@ from sound_visualizer.utils.google_cloud import init_google_cloud
 from sound_visualizer.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
-
-
-def download_file(bucket_filename, local_filename):
-    with open(local_filename, 'wb') as f:
-        storage.download_to(bucket_filename, f)
-
-
-def vstack(images):
-    if len(images) == 0:
-        raise ValueError("Need 0 or more images")
-
-    if isinstance(images[0], np.ndarray):
-        images = [Image.fromarray(img) for img in images]
-    width = max([img.size[0] for img in images])
-    height = sum([img.size[1] for img in images])
-    stacked = Image.new(images[0].mode, (width, height))
-
-    y_pos = 0
-    for img in images:
-        stacked.paste(img, (0, y_pos))
-        y_pos += img.size[1]
-    return stacked
-
-
-def toLogScale(image: PIL.Image, frequency_domain: np.ndarray) -> PIL.Image.Image:
-    cut_offs = [0, 5000, 15000, 100000]
-    idx_cutoffs = [frequency_domain.searchsorted(frequency) for frequency in cut_offs]
-
-    images = [
-        image.copy()
-        .crop((0, image.height - upper_frequency, image.width, image.height - lower_frequency))
-        .resize((image.width, idx_cutoffs[1]))
-        for (lower_frequency, upper_frequency) in zip(idx_cutoffs, idx_cutoffs[1:])
-    ]
-
-    return vstack(list(reversed(images)))
-
-
-def save_youtube_title(request: SpectralAnalysisFlow):
-    assert request.parameters.youtube_url is not None
-    youtube_page = requests.get(request.parameters.youtube_url)
-    parsed_page = BeautifulSoup(youtube_page.text, 'html.parser')
-    orm.save_title(request.id, parsed_page.title.text)
 
 
 def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, None, None]:
@@ -85,27 +39,31 @@ def generate_image(request: SpectralAnalysisFlow) -> Generator[PIL.Image.Image, 
     logger.info(f"converted {mp3_filename} to {wav_filename} in {stopwatch.interval}s")
 
     orm.update_request_status(request.id, 'splitting')
-    sound_reader = SoundReader(filename=wav_filename)
 
-    # separated = separator.separate(sound_reader.get_data().data, sound_reader.get_data().sample_rate)
-    orm.update_request_status(request.id, 'analysing')
+    separated_files = separator.separate(wav_filename)
 
     spectral_analyser = SpectralAnalyzer(
         frame_size=2 ** request.parameters.frame_size_power,
         overlap_factor=request.parameters.overlap_factor,
     )
+    greyscale_image_generator = GreyScaleImageGenerator(border_width=0, border_color='black')
 
-    with stopwatch:
-        spectral_analysis = spectral_analyser.get_spectrogram_data(sound_reader)
-    orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
-    orm.save_duration(request.id, spectral_analysis.time_domain[-1])
-    orm.update_request_status(request.id, 'generating image...')
-    logger.info(f'generated fft data {spectral_analysis}')
-    images = GreyScaleImageGenerator(border_width=15, border_color='black').create_image(
-        spectral_analysis
-    )
+    images = {}
+    for (type, filename) in separated_files.items():
+
+        with stopwatch:
+            spectral_analysis = spectral_analyser.get_spectrogram_data(
+                SoundReader(filename=filename)
+            )
+        orm.add_stopwatch(request.id, 'fft_computation', stopwatch.interval)
+        orm.save_duration(request.id, spectral_analysis.time_domain[-1])
+
+        logger.info(f'generated fft data {spectral_analysis}')
+        images_for_type = greyscale_image_generator.create_image(spectral_analysis)
+        images[type] = images_for_type
+
     orm.add_stopwatch(request.id, 'image generation', stopwatch.interval)
-    return images
+    return greyscale_images_blender(images)
 
 
 def callback(message):
@@ -146,6 +104,7 @@ if __name__ == '__main__':
     storage = GoogleCloudStorage(config.google_storage_bucket_name)
     subscriber = RabbitMqConsumer(connection)
     separator = Separator('spleeter:5stems')
+
     streaming_pull_future = subscriber.consume('uploaded-sound', callback=callback)
     with subscriber:
         try:
