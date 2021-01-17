@@ -30,7 +30,7 @@ def test_rabbitmq(connection):
     publisher = RabbitMqPublisher(connection)
     consumer = RabbitMqConsumer(connection)
 
-    connection.channel().queue_declare('foobar')
+    connection.channel().queue_declare('foobar', durable=True)
     publisher.publish('foobar', 'hello !')
 
     def callback(message: Message):

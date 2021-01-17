@@ -41,7 +41,8 @@ class MyApp(Flask):
         self.the_config = config_from_env()
         init_google_cloud(self.the_config)
         self.cache = Cache(cache_folder='/tmp/sound_visualizer')
-        connection = make_connection(self.the_config)
+        # flask makes it hard for the heartbeat...
+        connection = make_connection(self.the_config, heartbeat=0)
 
         self.publisher = RabbitMqPublisher(connection)
         self.storage = GoogleCloudStorage(self.the_config.google_storage_bucket_name)

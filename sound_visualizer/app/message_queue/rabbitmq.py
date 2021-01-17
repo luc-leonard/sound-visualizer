@@ -15,7 +15,7 @@ from sound_visualizer.app.message_queue.message_queue import (
 from sound_visualizer.config import Config
 
 
-def make_connection(config: Config) -> pika.BlockingConnection:
+def make_connection(config: Config, heartbeat: int = 15) -> pika.BlockingConnection:
     credentials = None
     if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
         credentials = pika.PlainCredentials(
@@ -26,7 +26,7 @@ def make_connection(config: Config) -> pika.BlockingConnection:
         host=config.rabbitmq_hostname,
         port=config.rabbitmq_port,
         virtual_host=config.rabbitmq_vhost,
-        heartbeat=0,
+        heartbeat=heartbeat,
     )
     if credentials is not None:
         parameters.credentials = credentials
@@ -91,6 +91,7 @@ class RabbitMqConsumer(MessageQueueConsumer):
             if stop_consume[0]:
                 self.channel.stop_consuming()
 
+        self.channel.queue_declare(binding_key, durable=True)
         self.tags.append(
             self.channel.basic_consume(
                 queue=binding_key, auto_ack=True, on_message_callback=_callback
