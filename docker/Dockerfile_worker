@@ -38,6 +38,10 @@ COPY ./poetry.lock pyproject.toml ./
 RUN poetry update install --no-dev
 
 FROM python:3.8-slim as prod
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y libsndfile-dev
+
+
 COPY --from=builder "/opt/pysetup" "/opt/pysetup"
 COPY vendor/ffmpeg /bin/ffmpeg
 COPY ./sound_visualizer/ /app/sound_visualizer

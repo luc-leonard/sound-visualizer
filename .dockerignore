@@ -12,3 +12,4 @@ for_docker/
 for_heroku/
 static/node_modules/
 spleets
+pretrained_models
