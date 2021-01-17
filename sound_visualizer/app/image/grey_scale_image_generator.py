@@ -1,8 +1,8 @@
 import logging
 from typing import Generator
 
-import PIL
 import numpy as np
+import PIL
 from PIL import Image, ImageEnhance, ImageOps
 from pydantic import BaseModel
 
