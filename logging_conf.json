@@ -1,4 +1,5 @@
 {
   "google.cloud.pubsub_v1.subscriber._protocol.leaser": "INFO",
-  "google.cloud.pubsub_v1.subscriber._protocol.heartbeater": "INFO"
+  "google.cloud.pubsub_v1.subscriber._protocol.heartbeater": "INFO",
+  "sound_visualizer.app.message_queue.rabbitmq": "DEBUG"
 }

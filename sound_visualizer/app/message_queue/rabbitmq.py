@@ -1,4 +1,5 @@
 import logging
+import time
 from asyncio import new_event_loop
 from asyncio.futures import Future
 from threading import Thread
@@ -14,8 +15,17 @@ from sound_visualizer.app.message_queue.message_queue import (
 )
 from sound_visualizer.config import Config
 
+logger = logging.getLogger(__name__)
 
-def make_connection(config: Config, heartbeat: int = 15) -> pika.BlockingConnection:
+
+def _heartbeat(connection: pika.BlockingConnection):
+    while True:
+        logger.debug('SENDING HEARTBEAT')
+        connection.add_callback_threadsafe(lambda: connection.sleep(0.1))
+        time.sleep(5)
+
+
+def make_connection(config: Config, heartbeat_thread: bool = False) -> pika.BlockingConnection:
     credentials = None
     if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
         credentials = pika.PlainCredentials(
@@ -26,11 +36,15 @@ def make_connection(config: Config, heartbeat: int = 15) -> pika.BlockingConnect
         host=config.rabbitmq_hostname,
         port=config.rabbitmq_port,
         virtual_host=config.rabbitmq_vhost,
-        heartbeat=heartbeat,
+        heartbeat=15,
     )
     if credentials is not None:
         parameters.credentials = credentials
+
     con = pika.BlockingConnection(parameters)
+    if heartbeat_thread:
+        th = Thread(target=_heartbeat, args=[con])
+        th.start()
     return con
 
 
@@ -87,7 +101,8 @@ class RabbitMqConsumer(MessageQueueConsumer):
             callback_thread = Thread(target=_start, args=[])
             callback_thread.start()
             while callback_thread.is_alive():
-                self.channel.connection.sleep(0.1)
+                self.logger.info('slee')
+                self.channel.connection.sleep(1.0)
             if stop_consume[0]:
                 self.channel.stop_consuming()
 
