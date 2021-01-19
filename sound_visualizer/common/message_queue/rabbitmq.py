@@ -56,7 +56,13 @@ class RabbitMqPublisher(MessageQueuePublisher):
         if self.connection.is_closed:
             self.connection = pika.BlockingConnection(self.parameters)
             self.channel = self.connection.channel()
-        self.channel.basic_publish(exchange='', routing_key=routing_key, body=message)
+        try:
+            self.channel.basic_publish(exchange='', routing_key=routing_key, body=message)
+        except Exception as e:
+            logger.warning(f'could not publish due to {e}')
+            self.connection = pika.BlockingConnection(self.parameters)
+            self.channel = self.connection.channel()
+            self.channel.basic_publish(exchange='', routing_key=routing_key, body=message)
 
 
 class RabbitMqMessage(Message):
