@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header" @click="$emit('click', element)">
-      <router-link :to="link_to_detail">{{ element.title }}</router-link>
+      <router-link :to="link_to_detail()">{{ element.title }}</router-link>
     </div>
     <div class="card-body">
       <img :src="thumbnail_url()" :alt="element.parameters.youtube_url"/>

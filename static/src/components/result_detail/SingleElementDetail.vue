@@ -1,12 +1,12 @@
 <template>
   <div :class="$style.element">
-    <youtube :class="$style.player"
-             :video-id="get_youtube_id()"
+    <EmbeddedPlayer
+             :element="element"
              ref="youtube"
-             :player-vars="players_vars"
+             @seek="onSeek"
              @paused="onPause"
              @playing="playing">
-    </youtube>
+    </EmbeddedPlayer>
     <div>{{ fps }}</div>
     <div @click="full_screen">[F U L L  S C R E E N]</div>
     <ScrollingCanvas
@@ -25,11 +25,10 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 // eslint-disable-next-line no-unused-vars
 import {SpectralAnalysisFlow} from "@/model/SpectralAnalysisFlow";
 import ScrollingCanvas from "@/components/result_detail/ScrollingCanvas.vue";
+import EmbeddedPlayer from "@/components/embeddedPlayer/EmbeddedPlayer.vue";
 
-
-var getYouTubeID = require('get-youtube-id');
 @Component({
-  components: {ScrollingCanvas}
+  components: {ScrollingCanvas, EmbeddedPlayer}
 })
 export default class SingleElementDetail extends Vue {
   @Prop({required: true})
@@ -53,6 +52,12 @@ export default class SingleElementDetail extends Vue {
     this.spectro.scrollTo(0);
   }
 
+  async onSeek() {
+    this.current_time_when_starting_to_play = performance.now();
+    await this.player().getCurrentTime().then((current_time: any) => {
+      this.player_start_time = current_time * 1000;
+    });
+  }
   async playing() {
     //this.$data.mixpanel.track("Video play", {id: this.element.id});
 
@@ -67,7 +72,9 @@ export default class SingleElementDetail extends Vue {
   }
 
   onPause() {
-    console.log('pause')
+    this.player().getCurrentTime().then((current_time: any) => {
+      this.player_start_time = current_time * 1000;
+    });
     this.is_playing = false;
   }
 
@@ -92,7 +99,7 @@ export default class SingleElementDetail extends Vue {
   }
 
   get_youtube_id() {
-    return getYouTubeID(this.element.parameters.youtube_url)
+    //return getYouTubeID(this.element.parameters.youtube_url)
   }
 
   make_url() {
@@ -102,17 +109,14 @@ export default class SingleElementDetail extends Vue {
   player() {
     if (!this.youtube_player) {
       let youtube: any = this.$refs.youtube;
-      this.youtube_player = youtube.player;
+      this.youtube_player = youtube;
     }
-    return this.youtube_player;
+    return this.youtube_player as EmbeddedPlayer;
   }
 }
 </script>
 
 <style module>
-.player {
-  border: 1px solid yellow;
-}
 
 .image_container {
   overflow: scroll;
