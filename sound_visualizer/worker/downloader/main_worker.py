@@ -11,6 +11,7 @@ from sound_visualizer.common.message_queue.rabbitmq import (
     RabbitMqConsumer,
     RabbitMqPublisher,
     make_connection,
+    make_parameters,
 )
 from sound_visualizer.common.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
@@ -78,7 +79,7 @@ if __name__ == '__main__':
     connection = make_connection(config)
     # two connections are needed since we cannot share them across threads.
     subscriber = RabbitMqConsumer(connection)
-    publisher = RabbitMqPublisher(connection)
+    publisher = RabbitMqPublisher(connection, make_parameters(config))
 
     streaming_pull_future = subscriber.consume('render-request', callback=callback)
     with subscriber:
