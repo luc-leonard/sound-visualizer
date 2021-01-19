@@ -21,30 +21,34 @@ logger = logging.getLogger(__name__)
 def _heartbeat(connection: pika.BlockingConnection):
     while True:
         logger.debug('SENDING HEARTBEAT')
-        connection.add_callback_threadsafe(lambda: connection.sleep(0.1))
-        time.sleep(5)
+        connection.add_callback_threadsafe(lambda: connection.process_data_events(time_limit=10))
+        time.sleep(10)
 
 
-def make_connection(config: Config, heartbeat_thread: bool = False) -> pika.BlockingConnection:
+def make_connection(config: Config, heartbeat: bool = True) -> pika.BlockingConnection:
     credentials = None
     if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
         credentials = pika.PlainCredentials(
             username=config.rabbitmq_username, password=config.rabbitmq_password
         )
-
-    parameters = pika.ConnectionParameters(
-        host=config.rabbitmq_hostname,
-        port=config.rabbitmq_port,
-        virtual_host=config.rabbitmq_vhost,
-        heartbeat=15,
-    )
+    if heartbeat:
+        parameters = pika.ConnectionParameters(
+            host=config.rabbitmq_hostname,
+            port=config.rabbitmq_port,
+            virtual_host=config.rabbitmq_vhost,
+            heartbeat=60,
+        )
+    else:
+        parameters = pika.ConnectionParameters(
+            host=config.rabbitmq_hostname,
+            port=config.rabbitmq_port,
+            virtual_host=config.rabbitmq_vhost,
+            heartbeat=0,
+        )
     if credentials is not None:
         parameters.credentials = credentials
 
     con = pika.BlockingConnection(parameters)
-    if heartbeat_thread:
-        th = Thread(target=_heartbeat, args=[con])
-        th.start()
     return con
 
 
