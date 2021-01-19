@@ -22,13 +22,13 @@ import Axios from "axios";
     SingleElementDetail,
   },
 })
+
 export default class extends Vue {
   element:SpectralAnalysisFlow | null = null;
   close() {
     this.$router.push({path: '/'});
   }
   mounted() {
-    console.log(this.$route);
         Axios
         .get(process.env.VUE_APP_BASE_API_URL + '/request/' + this.$route.params['result_id'])
         .then(response => {

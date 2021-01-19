@@ -32,7 +32,7 @@ export default class extends Vue {
 
   update_list() {
     Axios
-        .get(process.env.VUE_APP_BASE_API_URL + '/requests/?status=finished')
+        .get(process.env.VUE_APP_BASE_API_URL + '/requests/?status=finished&length=15')
         .then(response => {
               this.last_elements = response.data;
             }
