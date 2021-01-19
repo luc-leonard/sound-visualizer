@@ -1,7 +1,7 @@
 import logging
 
 from flask import send_file
-from flask_restful import Resource
+from flask_restful import Resource, abort
 
 from sound_visualizer.app.cache import Cache, CachedStorage
 from sound_visualizer.app.storage.storage import Storage
@@ -14,8 +14,10 @@ def TilesResources(storage: Storage, cache: Cache):
 
     class TilesResourcesImpl(Resource):
         def get(self, result_id: str, x: int):
-            logger.info(vars())
-            data = cached_storage.get(f'{result_id}_{x}')
-            return send_file(data, attachment_filename='_result.png', cache_timeout=360)
+            try:
+                data = cached_storage.get(f'{result_id}_{x}')
+                return send_file(data, attachment_filename='_result.png', cache_timeout=360)
+            except Exception:
+                abort(404)
 
     return TilesResourcesImpl
