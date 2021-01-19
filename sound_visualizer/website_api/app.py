@@ -10,7 +10,11 @@ from flask_cors import CORS
 from flask_restful import Api
 
 from sound_visualizer.common.cache import Cache
-from sound_visualizer.common.message_queue.rabbitmq import RabbitMqPublisher, make_connection
+from sound_visualizer.common.message_queue.rabbitmq import (
+    RabbitMqPublisher,
+    make_connection,
+    make_parameters,
+)
 from sound_visualizer.common.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
 from sound_visualizer.models.spectral_analysis_request import SpectralAnalysisFlowORM
@@ -44,9 +48,9 @@ class MyApp(Flask):
         init_google_cloud(self.the_config)
         self.cache = Cache(cache_folder='/tmp/sound_visualizer')
         # flask makes it hard for the heartbeat...
-        connection = make_connection(self.the_config, heartbeat=False)
+        connection = make_connection(self.the_config)
 
-        self.publisher = RabbitMqPublisher(connection)
+        self.publisher = RabbitMqPublisher(connection, make_parameters(self.the_config))
         self.storage = GoogleCloudStorage(self.the_config.google_storage_bucket_name)
         client = pymongo.MongoClient(self.the_config.mongo_connection_string)
         db = client.sound_visualizer

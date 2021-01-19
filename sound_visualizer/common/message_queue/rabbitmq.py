@@ -25,38 +25,37 @@ def _heartbeat(connection: pika.BlockingConnection):
         time.sleep(10)
 
 
-def make_connection(config: Config, heartbeat: bool = True) -> pika.BlockingConnection:
+def make_parameters(config: Config) -> pika.ConnectionParameters:
     credentials = None
     if config.rabbitmq_username is not None and config.rabbitmq_password is not None:
         credentials = pika.PlainCredentials(
             username=config.rabbitmq_username, password=config.rabbitmq_password
         )
-    if heartbeat:
-        parameters = pika.ConnectionParameters(
-            host=config.rabbitmq_hostname,
-            port=config.rabbitmq_port,
-            virtual_host=config.rabbitmq_vhost,
-            heartbeat=60,
-        )
-    else:
-        parameters = pika.ConnectionParameters(
-            host=config.rabbitmq_hostname,
-            port=config.rabbitmq_port,
-            virtual_host=config.rabbitmq_vhost,
-            heartbeat=0,
-        )
+    parameters = pika.ConnectionParameters(
+        host=config.rabbitmq_hostname,
+        port=config.rabbitmq_port,
+        virtual_host=config.rabbitmq_vhost,
+        heartbeat=60,
+    )
     if credentials is not None:
         parameters.credentials = credentials
+    return parameters
 
-    con = pika.BlockingConnection(parameters)
-    return con
+
+def make_connection(config: Config) -> pika.BlockingConnection:
+    return pika.BlockingConnection(make_parameters(config))
 
 
 class RabbitMqPublisher(MessageQueuePublisher):
-    def __init__(self, connection: pika.BlockingConnection):
+    def __init__(self, connection: pika.BlockingConnection, parameters):
+        self.connection = connection
+        self.parameters = parameters
         self.channel: BlockingChannel = connection.channel()
 
     def publish(self, routing_key: str, message) -> None:
+        if self.connection.is_closed:
+            self.connection = pika.BlockingConnection(self.parameters)
+            self.channel = self.connection.channel()
         self.channel.basic_publish(exchange='', routing_key=routing_key, body=message)
 
 

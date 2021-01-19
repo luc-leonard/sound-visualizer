@@ -14,20 +14,23 @@ def rabbitmq():
 
 
 @pytest.fixture()
-def connection(rabbitmq):
+def parameters(rabbitmq) -> pika.ConnectionParameters:
+    return pika.ConnectionParameters(host=rabbitmq.host, port=rabbitmq.port)
+
+
+@pytest.fixture()
+def connection(rabbitmq, parameters):
     print(f'connecting to {rabbitmq.port}:{rabbitmq.host}')
 
     def connect_rabbit() -> pika.BlockingConnection:
-        con = pika.BlockingConnection(
-            pika.ConnectionParameters(host=rabbitmq.host, port=rabbitmq.port)
-        )
+        con = pika.BlockingConnection(parameters)
         return con
 
     return try_until(connect_rabbit, 100, 100000)
 
 
-def test_rabbitmq(connection):
-    publisher = RabbitMqPublisher(connection)
+def test_rabbitmq(connection, parameters):
+    publisher = RabbitMqPublisher(connection, parameters)
     consumer = RabbitMqConsumer(connection)
 
     connection.channel().queue_declare('foobar', durable=True)
