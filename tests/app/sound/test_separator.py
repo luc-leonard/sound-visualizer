@@ -1,7 +1,7 @@
 import pytest
 
-from sound_visualizer.app.sound import SoundReader
-from sound_visualizer.app.sound.separator import Separator
+from sound_visualizer.common.sound import SoundReader
+from sound_visualizer.common.sound.separator import Separator
 
 
 @pytest.mark.skip()

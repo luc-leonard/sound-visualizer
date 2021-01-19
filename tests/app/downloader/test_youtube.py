@@ -1,6 +1,6 @@
 import pytest
 
-from sound_visualizer.app.downloader import YoutubeDownloader
+from sound_visualizer.common.downloader import YoutubeDownloader
 
 
 # This is skipped so we do not get banned from youtube :)

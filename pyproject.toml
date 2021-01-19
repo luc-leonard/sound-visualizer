@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sound-visualizer"
-version = "0.1.0"
+version = "0.5.0"
 description = ""
 authors = ["Luc Leonard <github@luc-leonard.fr>"]
 

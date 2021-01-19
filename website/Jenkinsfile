@@ -1,0 +1,80 @@
+def boolean hasChangesIn(String module) {
+  return !env.CHANGE_TARGET || sh(
+    returnStatus: true,
+    script: "git diff --name-only origin/${env.CHANGE_TARGET} ${env.GIT_COMMIT} | grep ^${module}/"
+  ) == 0
+}
+
+
+pipeline {
+	agent {
+	  docker {
+	  	image 'node:10'
+	    args '''-v $HOME/.pip:/pip-cache
+	    		-e _IN_DOCKER=1
+	          -v /var/run/docker.sock:/var/run/docker.sock
+	          -v /usr/bin/docker:/usr/bin/docker
+	          --network sound-visualizer-testing-network
+	          -e CAPROVER_PASS=$CAPROVER_PASS
+	          '''
+	   }
+	}
+	stages {
+		stage('PRE_BUILD') {
+			steps {
+				// this allows us to reference trhe main branch
+				sh 'git config --add remote.origin.fetch +refs/heads/main:refs/remotes/origin/main'
+				sh 'git fetch --no-tags'
+			}
+		}
+		stage('ALL') {
+			when {
+	 			anyOf {
+	 				 expression {
+   						 return hasChangesIn('static')
+  					}
+					branch 'main'
+	 			}
+	 		}
+
+			stages {
+				stage('install deps') {
+					steps {
+						dir('static') {
+							sh 'yarn install'
+						}
+				  	}
+				}
+				stage('Lint') {
+					steps {
+						sh 'echo lint'
+					}
+				}
+				stage ('test') {
+					steps {
+						sh 'echo test'
+					}
+				}
+				stage('build') {
+						when { branch 'main'}
+						steps {
+							dir('static') {
+								sh 'yarn build --mode production'
+							}
+						}
+				}
+				stage('deploy') {
+					when { branch 'main'}
+					steps {
+						sh 'make docker-front'
+						sh 'make docker-push'
+						sh '''docker run caprover/cli-caprover:v2.1.1 caprover deploy --caproverUrl https://captain.projects.luc-leonard.fr \
+						      --caproverPassword $CAPROVER_PASS \
+						      --caproverApp sound-visualizer \
+						      --imageName kimsufi.luc-leonard.fr:5000/lucleonard/sound-visualizer-front:latest'''
+					}
+				}
+			}
+		}
+	}
+}

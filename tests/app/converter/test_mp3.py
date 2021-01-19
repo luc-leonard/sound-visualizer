@@ -4,8 +4,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from sound_visualizer.app.converter import FFMPEGConverter
-from sound_visualizer.app.sound import SoundReader, SpectralAnalyzer
+from sound_visualizer.common.converter import FFMPEGConverter
+from sound_visualizer.common.sound import SoundReader, SpectralAnalyzer
 
 
 @pytest.fixture()

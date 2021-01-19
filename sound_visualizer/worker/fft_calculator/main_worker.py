@@ -6,14 +6,14 @@ from typing import Generator
 import PIL
 import pymongo
 
-from sound_visualizer.app.converter import FFMPEGConverter
-from sound_visualizer.app.image.grey_scale_image_generator import GreyScaleImageGenerator
-from sound_visualizer.app.image.image_blender import greyscale_images_blender
-from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, make_connection
-from sound_visualizer.app.sound import SpectralAnalyzer
-from sound_visualizer.app.sound.separator import Separator
-from sound_visualizer.app.sound.sound_reader import SoundReader
-from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
+from sound_visualizer.common.converter import FFMPEGConverter
+from sound_visualizer.common.image.grey_scale_image_generator import GreyScaleImageGenerator
+from sound_visualizer.common.image.image_blender import greyscale_images_blender
+from sound_visualizer.common.message_queue.rabbitmq import RabbitMqConsumer, make_connection
+from sound_visualizer.common.sound import SpectralAnalyzer
+from sound_visualizer.common.sound.separator import Separator
+from sound_visualizer.common.sound.sound_reader import SoundReader
+from sound_visualizer.common.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
 from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,

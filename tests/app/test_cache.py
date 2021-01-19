@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 
-from sound_visualizer.app.cache import Cache
+from sound_visualizer.common.cache import Cache
 
 
 @pytest.fixture()

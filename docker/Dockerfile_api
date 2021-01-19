@@ -43,7 +43,6 @@ COPY --from=builder "/opt/pysetup" "/opt/pysetup"
 COPY ./gunicorn_docker_config.py /app/gunicorn_docker_config.py
 COPY ./logging_conf.json /app/logging_conf.json
 COPY ./sound_visualizer /app/sound_visualizer/
-COPY ./static/dist/ /app/static/dist/
 
 WORKDIR /app/
 ENV _IN_DOCKER=1
@@ -51,4 +50,4 @@ ENV VENV_PATH="/opt/pysetup/.venv"
 ENV PYTHONPATH="$PYTHONPATH:."
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 EXPOSE 80
-CMD ["gunicorn", "-c", "gunicorn_docker_config.py", "sound_visualizer.api.app:app"]
+CMD ["gunicorn", "-c", "gunicorn_docker_config.py", "sound_visualizer.website_api.app:app"]

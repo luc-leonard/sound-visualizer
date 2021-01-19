@@ -1,7 +1,7 @@
 ###############################
 # Configuration and variables #
 ###############################
-VERSION=0.1.0
+VERSION=0.5.0
 #################
 # General goals #
 #################
@@ -47,6 +47,7 @@ docker-worker:
 
 docker-front:
 	docker build  -f docker/Dockerfile_front -t lucleonard/sound-visualizer-front:$(VERSION) -t lucleonard/sound-visualizer-front:latest .
+	docker build  -f docker/Dockerfile_front --build-arg MODE=development -t lucleonard/sound-visualizer-front-dev:$(VERSION) -t lucleonard/sound-visualizer-front-dev:latest .
 
 docker-test:
 	docker build  -f docker/Dockerfile_tests -t lucleonard/sound-visualizer-tests:$(VERSION) -t lucleonard/sound-visualizer-tests:latest .

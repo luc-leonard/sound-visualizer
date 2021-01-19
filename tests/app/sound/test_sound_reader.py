@@ -1,7 +1,7 @@
 import pytest
 from pytest_mock import MockerFixture
 
-from sound_visualizer.app.sound.sound_reader import SoundReader
+from sound_visualizer.common.sound.sound_reader import SoundReader
 from tests.util import generate_sound
 
 

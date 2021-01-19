@@ -1,7 +1,0 @@
-{
-  "schemaVersion": 2,
-  "dockerfilePath": "./docker/Dockerfile_worker",
-   "buildargs": {
-      "WORKER_MAIN": "sound_visualizer/worker/fft_calculator/main_worker.py"
-   }
- }

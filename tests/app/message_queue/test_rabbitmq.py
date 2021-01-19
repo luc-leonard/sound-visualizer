@@ -1,8 +1,8 @@
 import pika
 import pytest
 
-from sound_visualizer.app.message_queue.message_queue import Message
-from sound_visualizer.app.message_queue.rabbitmq import RabbitMqConsumer, RabbitMqPublisher
+from sound_visualizer.common.message_queue.message_queue import Message
+from sound_visualizer.common.message_queue.rabbitmq import RabbitMqConsumer, RabbitMqPublisher
 from tests.util import start_container, try_until
 
 
