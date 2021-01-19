@@ -40,7 +40,7 @@ pipeline {
 			stages {
 				stage('install deps') {
 					steps {
-						dir('static') {
+						dir('website') {
 							sh 'yarn install'
 						}
 				  	}
@@ -58,7 +58,7 @@ pipeline {
 				stage('build') {
 						when { branch 'main'}
 						steps {
-							dir('static') {
+							dir('website') {
 								sh 'yarn build --mode production'
 							}
 						}
