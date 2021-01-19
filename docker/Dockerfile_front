@@ -1,3 +1,12 @@
+FROM node:10 AS builder
+ARG MODE="production"
+COPY ./website/package.json /website/package.json
+COPY ./website/package-lock.json /website/package-lock.json
+WORKDIR /website
+RUN yarn install
+COPY ./website/ /website
+RUN yarn build --mode $MODE
+
 FROM socialengine/nginx-spa:latest
-COPY ./static/dist/ /app
+COPY --from=builder "/website/dist" "/app"
 RUN chmod -R 777 /app

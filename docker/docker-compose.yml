@@ -1,6 +1,11 @@
 
 version: "3.8"
 services:
+  website:
+    image: lucleonard/sound-visualizer-front-dev:latest
+    ports:
+      - "8080:80"
+
   web:
     image: lucleonard/sound-visualizer-api:latest
     ports:
@@ -32,7 +37,6 @@ services:
       - PYTHON_UNBUFFERED=1
     volumes:
         - "../for_docker/sound-visualizer-credentials.json:/sound-visualizer-credentials.json"
-
 
   worker:
     image: lucleonard/sound-visualizer-worker:latest

@@ -5,14 +5,14 @@ import pymongo
 import requests
 from bs4 import BeautifulSoup
 
-from sound_visualizer.app.converter.FFMPEGConverter import FFMPEGConverter
-from sound_visualizer.app.downloader.youtube import YoutubeDownloader
-from sound_visualizer.app.message_queue.rabbitmq import (
+from sound_visualizer.common.converter.FFMPEGConverter import FFMPEGConverter
+from sound_visualizer.common.downloader.youtube import YoutubeDownloader
+from sound_visualizer.common.message_queue.rabbitmq import (
     RabbitMqConsumer,
     RabbitMqPublisher,
     make_connection,
 )
-from sound_visualizer.app.storage.google_cloud_storage import GoogleCloudStorage
+from sound_visualizer.common.storage.google_cloud_storage import GoogleCloudStorage
 from sound_visualizer.config import config_from_env
 from sound_visualizer.models.spectral_analysis_request import (
     SpectralAnalysisFlow,
