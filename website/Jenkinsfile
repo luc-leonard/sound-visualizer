@@ -31,7 +31,7 @@ pipeline {
 			when {
 	 			anyOf {
 	 				 expression {
-   						 return hasChangesIn('static')
+   						 return hasChangesIn('website')
   					}
 					branch 'main'
 	 			}
