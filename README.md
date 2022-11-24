@@ -14,7 +14,7 @@ You will need to have [Poetry](https://python-poetry.org/) installed.
 
 ## Usage
 The application is relatively complex to deploy.
-if you juste want to have fun, you can go [here](https://sound-visualizer.projects.luc-leonard.fr/) to try it
+if you juste want to have fun, you can go [here](https://sound-visualizer.projects.luc-leonard.fr/) to try it. -- UPLOAD IS CURRENTLY DISABLED --
 
 ### BACKEND
 
